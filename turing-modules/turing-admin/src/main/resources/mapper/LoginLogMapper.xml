@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.admin.mapper.LoginLogMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.admin.entity.LoginLog" id="loginLogMap">
+        <result property="id" column="ID"/>
+        <result property="loginUserId" column="LOGIN_USER_ID"/>
+        <result property="loginUserName" column="LOGIN_USER_NAME"/>
+        <result property="loginRegion" column="LOGIN_REGION"/>
+        <result property="loginIp" column="LOGIN_IP"/>
+        <result property="loginTime" column="LOGIN_TIME"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+        ID,LOGIN_USER_ID,LOGIN_USER_NAME,LOGIN_REGION,LOGIN_IP,LOGIN_TIME,DEL_FLAG,CRT_USER_NAME,CRT_USER_ID,CRT_TIME,UPD_USER_NAME,UPD_USER_ID,
+        UPD_TIME,DEPART_ID,TENANT_ID
+    </sql>
+
+    <select id="queryAll" resultMap="loginLogMap">
+        SELECT <include refid="baseColumn"/> FROM login_log ORDER BY UPD_TIME desc,CRT_TIME desc
+    </select>
+
+</mapper>

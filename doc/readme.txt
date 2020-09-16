@@ -1,0 +1,1 @@
+docker run -d -p 8761:8761 -e "EUREKA_INSTANCE_IP-ADDRESS=10.21.16.30" --name turing-center 10.21.16.29:5000/turing/turing-center:1.6.0

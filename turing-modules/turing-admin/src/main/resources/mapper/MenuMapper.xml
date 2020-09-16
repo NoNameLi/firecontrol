@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.admin.mapper.MenuMapper">
+    <resultMap id="BaseResultMap" type="cn.turing.firecontrol.admin.entity.Menu">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parentId"/>
+        <result column="href" jdbcType="VARCHAR" property="href"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="type" jdbcType="CHAR" property="type"/>
+        <result column="order_num" javaType="INTEGER" property="orderNum"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="crt_time" jdbcType="DATE" property="crtTime"/>
+        <result column="crt_user" jdbcType="VARCHAR" property="crtUser"/>
+        <result column="crt_name" jdbcType="VARCHAR" property="crtName"/>
+        <result column="crt_host" jdbcType="VARCHAR" property="crtHost"/>
+        <result column="upd_time" jdbcType="DATE" property="updTime"/>
+        <result column="upd_user" jdbcType="VARCHAR" property="updUser"/>
+        <result column="upd_name" jdbcType="VARCHAR" property="updName"/>
+        <result column="upd_host" jdbcType="VARCHAR" property="updHost"/>
+        <result column="attr1" jdbcType="VARCHAR" property="attr1"/>
+        <result column="attr2" jdbcType="VARCHAR" property="attr2"/>
+        <result column="attr3" jdbcType="VARCHAR" property="attr3"/>
+        <result column="attr4" jdbcType="VARCHAR" property="attr4"/>
+        <result column="attr5" jdbcType="VARCHAR" property="attr5"/>
+        <result column="attr6" jdbcType="VARCHAR" property="attr6"/>
+        <result column="attr7" jdbcType="VARCHAR" property="attr7"/>
+        <result column="attr8" jdbcType="VARCHAR" property="attr8"/>
+        <result column="path" jdbcType="VARCHAR" property="path"/>
+        <result property="tenantId" column="tenant_id"/>
+    </resultMap>
+    <select id="selectMenuByAuthorityId" resultMap="BaseResultMap">
+        select t.* from base_resource_authority ra
+        inner join base_menu t
+        on ra.resource_id = t.id
+        and ra.authority_id = #{authorityId}
+        and ra.authority_type = #{authorityType}
+        and ra.resource_type = 'menu'
+        and ra.type = #{type}
+      </select>
+      <select id="selectAuthorityMenuByUserId" resultMap="BaseResultMap">
+         select distinct t.* from base_resource_authority ra
+        inner join base_menu t
+        on ra.resource_id = t.id
+        and ra.authority_id in (
+          select group_id from base_group_member where user_id = #{userId}
+          union select group_id from base_group_leader where user_id = #{userId}
+          union select bpg.group_id from base_position_group bpg
+            inner join base_position_user bpu on bpg.position_id = bpu.position_id
+            and bpu.user_id = #{userId}
+        )
+        and ra.authority_type = 'group'
+        and ra.resource_type = 'menu'
+        and ra.type = #{type}
+        order by order_num,id;
+      </select>
+    <select id="selectAuthoritySystemByUserId" resultMap="BaseResultMap">
+        select distinct t.* from base_resource_authority ra
+        inner join base_menu t
+        on ra.resource_id = t.id
+        and ra.authority_id in (
+        select group_id from base_group_member where user_id = #{userId}
+        union select group_id from base_group_leader where user_id = #{userId}
+        )
+        and ra.authority_type = 'group'
+        and ra.resource_type = 'menu'
+        and ra.type = #{type}
+        where t.parent_id = -1
+        order by order_num,id;
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM base_menu ORDER BY order_num,id;
+    </select>
+
+    <select id="selectAllByGroupId" resultType="map">
+        select m.id id,m.code code, m.title title,m.parent_id parentId,m.href href,m.icon icon,m.description description,m.path path,m.attr1 attr1,case ra.authority_id when #{groupId} then true else false END as isHave
+        from base_menu m
+        inner join base_resource_authority ra on m.id = ra.resource_id
+        WHERE ra.resource_type = 'menu' and ra.authority_type = 'group'
+    </select>
+
+    <select id="selectAllOfSuperAdmin" resultMap="BaseResultMap">
+        SELECT * FROM base_menu WHERE attr3 = '1' ORDER BY order_num,id;
+    </select>
+
+    <select id="selectByTenantId" resultMap="BaseResultMap">
+        select bm.* from base_menu bm
+        WHERE (bm.attr2 is null or bm.attr2 in (
+            SELECT c.id from channel c
+                INNER JOIN base_channel_tenant bct ON bct.channel_id = c.id
+            WHERE bct.tenant_id = #{tenantId}
+        )) and bm.attr4 = '1'
+        ORDER BY order_num,id;
+    </select>
+    
+    <select id="selectByGroupId" resultType="string">
+        SELECT DISTINCT bm.id from base_menu bm
+        LEFT JOIN base_resource_authority bra on bm.id = bra.resource_id
+        WHERE bra.resource_type = 'menu' and bra.authority_type = 'group' and bra.authority_id = #{groupId}
+    </select>
+
+    <delete id="deleteByGroupId">
+        DELETE from base_resource_authority where resource_type = 'menu' and authority_id = #{groupId}
+    </delete>
+</mapper>

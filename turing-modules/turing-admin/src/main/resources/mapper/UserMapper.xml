@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.admin.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.admin.entity.User">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="mobile_phone" jdbcType="VARCHAR" property="mobilePhone" />
+    <result column="tel_phone" jdbcType="VARCHAR" property="telPhone" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="sex" jdbcType="CHAR" property="sex" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result property="crtUserName" column="crt_user_name"/>
+    <result property="crtUserId" column="crt_user_id"/>
+    <result property="crtTime" column="crt_time"/>
+    <result property="updUserName" column="upd_user_name"/>
+    <result property="updUserId" column="upd_user_id"/>
+    <result property="updTime" column="upd_time"/>
+    <result column="attr1" jdbcType="VARCHAR" property="attr1" />
+    <result column="attr2" jdbcType="VARCHAR" property="attr2" />
+    <result column="attr3" jdbcType="VARCHAR" property="attr3" />
+    <result column="attr4" jdbcType="VARCHAR" property="attr4" />
+    <result column="attr5" jdbcType="VARCHAR" property="attr5" />
+    <result column="attr6" jdbcType="VARCHAR" property="attr6" />
+    <result column="attr7" jdbcType="VARCHAR" property="attr7" />
+    <result column="attr8" jdbcType="VARCHAR" property="attr8" />
+    <result column="depart_id" jdbcType="VARCHAR" property="departId" />
+    <result column="is_deleted" jdbcType="VARCHAR" property="isDeleted"/>
+    <result column="is_disabled" jdbcType="VARCHAR" property="isDisabled"/>
+    <result column="is_super_admin" jdbcType="VARCHAR" property="isSuperAdmin"/>
+    <result column="tenant_id" jdbcType="VARCHAR" property="tenantId"/>
+  </resultMap>
+
+  <sql id="baseColumn">
+    id,username,password,name,birthday,address,mobile_phone,tel_phone,email,sex,type,description,crt_user_name,
+    crt_user_id,crt_time,upd_user_name,upd_user_id,upd_time,attr1,attr2,attr3,
+    attr4,attr5,attr6,attr7,attr8,depart_id,is_deleted,is_disabled,is_super_admin,tenant_id
+  </sql>
+  
+  <select id="selectMemberByGroupId" resultMap="BaseResultMap">
+    select u.username,u.name,u.id from base_user u
+    left join  base_group_member gm
+    on gm.user_id = u.id where gm.group_id = #{groupId}
+  </select>
+  <select id="selectLeaderByGroupId" resultMap="BaseResultMap">
+    select u.username,u.name,u.id from base_user u
+    left join base_group_leader gm
+    on gm.user_id = u.id where gm.group_id = #{groupId}
+  </select>
+  <select id="selectUserDataDepartIds" resultType="java.lang.String">
+    select bd.id from base_depart bd
+    inner join
+    base_position_depart bpd
+    on bpd.depart_id = bd.id
+    inner join base_position_user bpu
+    on bpd.position_id = bpu.position_id
+    where bpu.user_id = #{userId}
+  </select>
+
+  <select id="selectUserByMobilePhone" resultMap="BaseResultMap">
+    SELECT <include refid="baseColumn"/> FROM base_user u WHERE u.mobile_phone = #{mobilePhone} and u.is_deleted = '0' and u.is_disabled = '0'
+  </select>
+
+  <select id="selectUser" resultMap="BaseResultMap" parameterType="cn.turing.firecontrol.admin.entity.User">
+    SELECT id,username FROM `base_user` WHERE  1=1
+    <if test="tenantId != null and tenantId != ''">
+      AND `tenant_id`=#{tenantId}
+    </if>
+    <if test="attr1 != null and attr1 != ''">
+      AND `attr1`=#{attr1}
+    </if>
+    <if test="username != null and username != ''">
+      AND `username`='%${username}%'
+    </if>
+  </select>
+
+  <select id="listUser" resultType="map">
+    SELECT u.id, u.username,u.name,u.mobile_phone mobilePhone, g.name role from base_user u
+      LEFT JOIN(select id,user_id,group_id from base_group_leader  UNION select id,user_id,group_id from base_group_member) gm
+        ON u.id = gm.user_id
+      LEFT JOIN base_group g ON gm.group_id = g.id
+    <where>
+      u.is_deleted = '0' and u.is_disabled = '0'
+      <if test="username != null">
+        and username = #{username}
+      </if>
+      <if test="name != null">
+        and u.name = #{name}
+      </if>
+      <if test="mobilePhone != null">
+        and mobile_phone = #{mobilePhone}
+      </if>
+      <if test="groupId != null">
+        and gm.group_id = #{groupId}
+      </if>
+      <if test="crtUserId != null">
+        and u.crt_user_id = #{crtUserId}
+      </if>
+    </where>
+    order by u.upd_time desc, u.crt_time desc
+  </select>
+
+  <update id="batchDelete">
+    UPDATE base_user u SET u.is_deleted = "1" WHERE u.id IN (${ids});
+  </update>
+
+  <select id="batchQuery" resultMap="BaseResultMap">
+    SELECT <include refid="baseColumn" />
+    FROM base_user u
+    WHERE u.id in (${ids});
+  </select>
+
+  <select id="selectUnbindTenantAdmin" resultType="map" parameterType="string">
+    SELECT id id, username username, name name from base_user u
+    WHERE u.tenant_id is null AND u.crt_user_id = '1' and u.is_deleted = '0' and u.is_disabled = '0'
+  </select>
+
+  <select id="selelcTenantAdmin" resultMap="BaseResultMap" >
+    SELECT <include refid="baseColumn" />
+    FROM base_user u
+    WHERE u.tenant_id = #{tenantId} and u.attr1 = '1' and u.is_deleted = '0' and u.is_disabled = '0'
+  </select>
+
+  <update id="disableUserByTenant">
+    UPDATE base_user set is_disabled = '1' WHERE tenant_id = #{tenantId}
+  </update>
+
+  <select id="selectByCreater" resultMap="BaseResultMap">
+    SELECT <include refid="baseColumn"/> FROM base_user u WHERE u.crt_user_id = #{createrId} and u.is_deleted = '0' and u.is_disabled = '0'
+  </select>
+
+  <select id="queryUsers" resultType="cn.turing.firecontrol.admin.vo.PageUser">
+    SELECT
+    bu.id id,
+    bu.username username,
+    bu.`name` NAME,
+    bu.mobile_phone mobilePhone,
+    bg.`name` groupName
+    FROM
+    base_user bu
+    JOIN base_group_leader bgl ON bu.id = bgl.user_id
+    JOIN base_group bg ON bgl.group_id = bg.id
+    WHERE
+    bu.is_deleted = '0'
+    AND bu.is_disabled = '0'
+    <if test="tenantId != null and tenantId != ''">
+      AND bu.tenant_id = #{tenantId}
+    </if>
+    <if test="username != null and username != ''">
+      AND bu.username LIKE '%${username}%'
+    </if>
+    <if test="name != null and name != ''">
+      AND bu.`name` LIKE '%${name}%'
+    </if>
+    <if test="mobilePhone != null and mobilePhone != ''">
+      AND bu.mobile_phone LIKE '%${mobilePhone}%'
+    </if>
+    <choose>
+      <when test="isReserve == true">
+        AND bu.id NOT IN (${ids})
+      </when>
+      <otherwise>
+        AND bu.id IN (${ids})
+      </otherwise>
+    </choose>
+    UNION
+    SELECT
+    bu.id id,
+    bu.username username,
+    bu.`name` NAME,
+    bu.mobile_phone mobilePhone,
+    bg.`name` groupName
+    FROM
+    base_user bu
+    JOIN base_group_member bgm ON bu.id = bgm.user_id
+    JOIN base_group bg ON bgm.group_id = bg.id
+    WHERE
+    bu.is_deleted = '0'
+    AND bu.is_disabled = '0'
+    <if test="tenantId != null and tenantId != ''">
+      AND bu.tenant_id = #{tenantId}
+    </if>
+    <if test="username != null and username != ''">
+      AND bu.username LIKE '%${username}%'
+    </if>
+    <if test="name != null and name != ''">
+      AND bu.`name` LIKE '%${name}%'
+    </if>
+    <if test="mobilePhone != null and mobilePhone != ''">
+      AND bu.mobile_phone LIKE '%${mobilePhone}%'
+    </if>
+    <choose>
+      <when test="isReserve == true">
+        AND bu.id NOT IN (${ids})
+      </when>
+      <otherwise>
+        AND bu.id IN (${ids})
+      </otherwise>
+    </choose>
+  </select>
+
+
+</mapper>

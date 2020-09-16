@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.admin.mapper.GroupMapper">
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.admin.entity.Group">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="parent_id" jdbcType="VARCHAR" property="parentId" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="group_type" jdbcType="INTEGER" property="groupType" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result property="crtUserName" column="crt_user_name"/>
+    <result property="crtUserId" column="crt_user_id"/>
+    <result property="crtTime" column="crt_time"/>
+    <result property="updUserName" column="upd_user_name"/>
+    <result property="updUserId" column="upd_user_id"/>
+    <result property="updTime" column="upd_time"/>
+    <result column="attr1" jdbcType="VARCHAR" property="attr1" />
+    <result column="attr2" jdbcType="VARCHAR" property="attr2" />
+    <result column="attr3" jdbcType="VARCHAR" property="attr3" />
+    <result column="attr4" jdbcType="VARCHAR" property="attr4" />
+    <result column="attr5" jdbcType="VARCHAR" property="attr5" />
+    <result column="attr6" jdbcType="VARCHAR" property="attr6" />
+    <result column="attr7" jdbcType="VARCHAR" property="attr7" />
+    <result column="attr8" jdbcType="VARCHAR" property="attr8" />
+    <result property="tenantId" column="tenant_id"/>
+  </resultMap>
+  <sql id="BaseColumn" >
+    id id,code code,name name,parent_id parentId,path path,type type,group_type groupType,description description,crt_user_name crtUserName,
+    crt_user_id crtUserId,crt_time crtTime,upd_user_name updUserName,upd_user_id updUserId,upd_time updTime,attr1 attr1,attr2 attr2,attr3 attr3,
+    attr4 attr4,attr5 attr5,attr6 attr6,attr7 attr7,attr8 attr8,tenant_id tenantId
+  </sql>
+  <delete id="deleteGroupMembersById">
+      delete from base_group_member where group_id = #{groupId}
+  </delete>
+  <delete id="deleteGroupLeadersById">
+    delete from base_group_leader where group_id = #{groupId}
+  </delete>
+  <delete id="deleteGroupMembersByUserId">
+    delete from base_group_member where user_id = #{userId}
+  </delete>
+  <delete id="deleteGroupLeadersByUserId">
+    delete from base_group_leader where user_id = #{userId}
+  </delete>
+  <insert id="insertGroupMembersById">
+    insert into base_group_member (
+       id,group_id,user_id,tenant_id
+    )
+    values(
+       #{id},#{groupId},#{userId},#{tenantId}
+    )
+  </insert>
+  <insert id="insertGroupLeadersById">
+    insert into base_group_leader (
+       id,group_id,user_id,tenant_id
+    )
+    values(
+       #{id},#{groupId},#{userId},#{tenantId}
+    )
+  </insert>
+
+  <select id="countLeaderByGroupId" resultType="int">
+    SELECT count(gl.id) from base_group_leader gl
+    join base_user bu on bu.id = gl.user_id
+    where gl.group_id = #{groupId} and bu.is_deleted = '0' and bu.is_disabled = '0'
+  </select>
+  <select id="countMemberByGroupId" resultType="int">
+    SELECT count(gl.id) from base_group_member gl
+    join base_user bu on bu.id = gl.user_id
+    where gl.group_id = #{groupId} and bu.is_deleted = '0' and bu.is_disabled = '0'
+  </select>
+
+  <select id="pageList" resultMap="BaseResultMap">
+    SELECT <include refid="BaseColumn"/>
+    FROM base_group g
+    <where>
+      <if test="name != null and name != ''" >
+        g.name = #{name}
+      </if>
+    </where>
+    ORDER BY upd_time desc, crt_time desc
+  </select>
+
+  <select id="listByUser" resultType="map">
+    SELECT g.id, g.name, case when gl.user_id = #{userId} or gm.user_id = #{userId} THEN true ELSE FALSE end as isUser
+    from base_group g
+      left JOIN base_group_leader gl ON gl.group_id = g.id
+      LEFT JOIN base_group_member gm on gm.group_id = g.id
+  </select>
+
+  <select id="queryByUser" resultMap="BaseResultMap">
+    SELECT * from base_group bg
+    JOIN base_group_leader bgl ON bgl.group_id = bg.id
+    WHERE bgl.user_id = #{userId}
+    UNION
+    SELECT * from base_group bg
+    JOIN base_group_member bgm ON bgm.group_id = bg.id
+    WHERE bgm.user_id = #{userId}
+  </select>
+</mapper>

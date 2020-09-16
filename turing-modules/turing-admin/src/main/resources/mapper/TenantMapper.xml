@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.admin.mapper.TenantMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.admin.entity.Tenant" id="tenantMap">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="crtUserName" column="crt_user_name"/>
+        <result property="crtUserId" column="crt_user_id"/>
+        <result property="crtTime" column="crt_time"/>
+        <result property="updUserName" column="upd_user_name"/>
+        <result property="updUserId" column="upd_user_id"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="attr1" column="attr1"/>
+        <result property="attr2" column="attr2"/>
+        <result property="attr3" column="attr3"/>
+        <result property="attr4" column="attr4"/>
+        <result property="site" column="site"/>
+        <result property="tenantNo" column="tenant_no"/>
+        <result property="description" column="description"/>
+        <result property="isSuperTenant" column="is_super_tenant"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="owner" column="owner"/>
+    </resultMap>
+
+    <select id="batchQuery" resultMap="tenantMap">
+        select id id, `name` name
+        from base_tenant
+        where id in (${tenantIds})  and is_deleted = '0'
+    </select>
+
+    <!-- 分页然站点名称搜索-->
+    <select id="pageList" resultMap="tenantMap" parameterType="String">
+        select id id, `name` name,attr2 attr2 from base_tenant where is_deleted = '0'
+        <if test="_parameter != null and _parameter != ''">
+            AND `name` like '%${_parameter}%'
+        </if>
+        order by upd_time desc, crt_time desc
+    </select>
+
+
+    <!-- 查看站点名，域名是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.admin.entity.Tenant" resultType="Integer">
+        SELECT COUNT(*) FROM `base_tenant` WHERE is_deleted = '0'
+        <if test="name != null and name != ''">
+            AND `name`=#{name}
+        </if>
+        <if test="attr1 != null and attr1 != ''">
+            AND `attr1`=#{attr1}
+        </if>
+    </select>
+
+    <update id="deleteTenant">
+        UPDATE base_tenant SET is_deleted = '1' WHERE id = #{tenantId}
+    </update>
+
+    <select id="selectByName" resultMap="tenantMap">
+        select * from base_tenant where is_deleted = '0' and name = #{name}
+    </select>
+
+    <select id="batchQueryInfo" resultType="map">
+        select bt.id id, bt.`name` name,case when bu.`name` is null then bu.username ELSE bu.`name` END AS user,bu.mobile_phone phone
+        from base_tenant bt
+        join base_user bu on bu.tenant_id = bt.id and bu.is_deleted = '0' and bu.is_disabled = '0' and bu.attr1 = '1'
+        where bt.is_deleted = '0' and bt.id in (${tenantIds})
+    </select>
+    <select id="queryById" resultType="cn.turing.firecontrol.admin.entity.Tenant">
+        SELECT site,tenant_no from base_tenant where id =#{id}
+    </select>
+
+</mapper>

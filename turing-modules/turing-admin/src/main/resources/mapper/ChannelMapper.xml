@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.admin.mapper.ChannelMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.admin.entity.Channel" id="channelMap">
+        <result property="id" column="ID"/>
+        <result property="channelType" column="CHANNEL_TYPE"/>
+        <result property="channelName" column="CHANNEL_NAME"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <select id="queryAll" resultType="map">
+        SELECT c.id id, c.CHANNEL_NAME channelName,c.CHANNEL_TYPE channelType, case WHEN c.id in (
+              select channel_id from base_channel_tenant where tenant_id = #{tenantId}
+        ) THEN true ELSE false end as isAdd
+        from channel c
+    </select>
+
+    <select id="list" resultType="map">
+        select DISTINCT c.id id,c.CHANNEL_NAME channelName,bm.icon icon from channel c
+        join base_menu bm ON bm.attr2 = c.id
+        join base_channel_tenant bct on bct.channel_id = c.id
+        WHERE bm.parent_id = '-1'
+        <if test="tenantId != null and tenantId != ''">
+            and bct.tenant_id = #{tenantId}
+        </if>
+    </select>
+
+    <select id="getByIds" resultMap="channelMap">
+       select id,CHANNEL_NAME from channel where 1=1 and id in (${ids})
+    </select>
+
+</mapper>

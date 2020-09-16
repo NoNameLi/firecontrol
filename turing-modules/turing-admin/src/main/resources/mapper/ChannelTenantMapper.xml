@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.admin.mapper.ChannelTenantMapper">
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.admin.entity.ChannelTenant">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" jdbcType="INTEGER" property="id" />
+    <result column="channel_id" jdbcType="VARCHAR" property="channelId" />
+    <result column="tenant_id" jdbcType="VARCHAR" property="tenantId" />
+    <result column="crt_user_name" jdbcType="VARCHAR" property="crtUserName" />
+    <result column="crt_user_id" jdbcType="VARCHAR" property="crtUserId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_user_name" jdbcType="VARCHAR" property="updUserName" />
+    <result column="upd_user_id" jdbcType="VARCHAR" property="updUserId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+    <result column="depart_id" jdbcType="VARCHAR" property="departId" />
+  </resultMap>
+
+  <sql id="baseColumn">
+    id id, channel_id channelId, tenant_id tenantId,crt_user_name crtUserName,crt_user_id crtUserId,crt_time crtTime,
+    upd_user_name updUserName,upd_user_id updUserId,upd_time updTime,depart_id departId
+  </sql>
+
+  <delete id="deleteByTenant" >
+    DELETE FROM base_channel_tenant WHERE tenant_id = #{tenantId}
+  </delete>
+</mapper>
