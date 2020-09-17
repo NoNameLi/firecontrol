@@ -1,0 +1,31 @@
+spring:
+  profiles:
+    active: test
+  cloud:
+    config:
+      discovery:
+        service-id: turing-config
+        enabled: true
+      label: master  # git 分支
+      name: gate
+      profile: ${spring.profiles.active}
+
+management:
+  security:
+    enabled: false
+
+
+#demo
+---
+spring:
+  profiles: demo
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    ip-address: ${spring.cloud.client.ipAddress}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/

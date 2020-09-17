@@ -1,0 +1,39 @@
+spring:
+    profiles:
+      active: demo
+    application:
+        name: turing-config
+    cloud:
+        config:
+            server:
+                git:
+                  uri: gitee配置文件地址
+                  username:
+                  password:
+                  basedir: config-repo
+
+server:
+    port: 8750 #启动端口
+
+#是否需要权限拉去，默认是true,如果不false就不允许你去拉取配置中心Server更新的内容
+management:
+  security:
+    enabled: false
+
+#demo
+---
+spring:
+  profiles: demo
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+#    ip-address:  ${spring.cloud.client.ipAddress}
+    ip-address:  192.168.0.22
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.0.22:8761/eureka/
+
+

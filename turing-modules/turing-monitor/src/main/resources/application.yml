@@ -1,0 +1,109 @@
+server:
+  port: 8766
+spring:
+  profiles:
+    active: demo
+  application:
+    name: turing-monitor
+
+
+management:
+  security:
+    enabled: false
+
+security:
+  user:
+    name: admin
+    password: 123456
+  basic:
+    enabled: false
+
+#demo
+---
+spring:
+  profiles: demo
+  # 自行配置smtp
+  mail:
+    host:
+    username:
+    password:
+    port: 465
+    protocol: smtps
+  boot:
+    admin:
+      notify:
+        mail:
+          from: ${spring.mail.username}
+          to:
+          subject: "智慧消防:#{application.name} (#{application.id}) 状态变更为: #{to.status}"
+
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    ip-address:  ${spring.cloud.client.ipAddress}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.0.22:8761/eureka/
+
+
+#图灵正式线
+---
+spring:
+  profiles: tr
+  mail:
+    host: smtp.qq.com
+    username: 3291659070@qq.com
+    password: gqeqqiaftvuuchij
+    port: 465
+    protocol: smtps
+  boot:
+    admin:
+      notify:
+        mail:
+          from: ${spring.mail.username}
+          to: hany@turing.ac.cn,duanqq@turing.ac.cn,yangq@turing.ac.cn
+          subject: "智慧消防开发线:#{application.name} (#{application.id}) 状态变更为: #{to.status}"
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    ip-address: ${spring.cloud.client.ipAddress}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://10.21.16.3:8761/eureka/,http://10.21.16.4:8761/eureka/
+
+#测试线
+---
+spring:
+  profiles: test
+  mail:
+    host: smtp.qq.com
+    username: 3291659070@qq.com
+    password: gqeqqiaftvuuchij
+    port: 465
+    protocol: smtps
+  boot:
+    admin:
+      notify:
+        mail:
+          from: ${spring.mail.username}
+          to: hany@turing.ac.cn,duanqq@turing.ac.cn,yangq@turing.ac.cn
+          subject: "智慧消防开发线:#{application.name} (#{application.id}) 状态变更为: #{to.status}"
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+    prefer-ip-address: true
+    ip-address: 10.21.0.26
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      #            defaultZone: http://localhost:8761/eureka/
+      # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+      defaultZone: http://10.21.0.26:8761/eureka/

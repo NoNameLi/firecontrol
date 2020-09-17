@@ -1,0 +1,37 @@
+spring:
+  profiles:
+    active: demo
+  cloud:
+    config:
+      discovery:
+        service-id: turing-config
+        enabled: true
+      label: master # git 分支
+      name: auth
+      profile: ${spring.profiles.active}
+
+management:
+  security:
+    enabled: false
+
+
+
+
+#测试线
+---
+spring:
+  profiles: demo
+eureka:
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      #            defaultZone: http://localhost:8761/eureka/
+      # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+      defaultZone: http://host/eureka/
+
+
+
