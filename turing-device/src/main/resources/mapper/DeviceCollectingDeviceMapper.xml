@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceCollectingDeviceMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceCollectingDevice" id="deviceCollectingDeviceMap">
+        <result property="id" column="ID"/>
+        <result property="collectingDevicTypeId" column="COLLECTING_DEVIC_TYPE_ID"/>
+        <result property="status" column="STATUS"/>
+        <result property="no" column="NO"/>
+        <result property="networkForm" column="NETWORK_FORM"/>
+        <result property="positionDescription" column="POSITION_DESCRIPTION"/>
+        <result property="geographicalPositionSign" column="GEOGRAPHICAL_POSITION_SIGN"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+    </resultMap>
+
+    <resultMap type="Map" id="map">
+        <result property="id" column="ID"/>
+        <result property="collectingDevicTypeId" column="COLLECTING_DEVIC_TYPE_ID"/>
+        <result property="status" column="STATUS"/>
+        <result property="no" column="NO"/>
+        <result property="networkForm" column="NETWORK_FORM"/>
+        <result property="positionDescription" column="POSITION_DESCRIPTION"/>
+        <result property="geographicalPositionSign" column="GEOGRAPHICAL_POSITION_SIGN"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="manufacturer" column="MANUFACTURER"/>
+        <result property="model" column="MODEL"/>
+    </resultMap>
+
+
+
+    <!-- 分页查询  根据条件搜索-->
+    <select id="selectQuery"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceCollectingDevice">
+      SELECT
+        a.id,
+	    a.`STATUS`,
+	    a.`NO`,
+	    b.MANUFACTURER,
+	    b.EQUIPMENT_TYPE,
+	    b.MODEL,
+	    a.POSITION_DESCRIPTION
+    FROM
+	    device_collecting_device a
+    LEFT JOIN device_collecting_device_type b ON a.COLLECTING_DEVIC_TYPE_ID = b.ID
+    WHERE a.DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != '' and manufacturer != '全部'">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+        <if test="no != null and no != ''">
+            AND `NO` = #{no}
+        </if>
+        <if test="status != null and status != '' and status !='-1' ">
+            AND `STATUS` = #{status}
+        </if>
+        <if test="positionDescription != null and positionDescription != ''">
+            AND `POSITION_DESCRIPTION` = #{positionDescription}
+        </if>
+        order by a.CRT_TIME DESC
+    </select>
+
+
+    <!-- 查看代号是否重复-->
+    <select id="selectByCount" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM `device_collecting_device` WHERE DEL_FLAG = '0' AND  `NO` = #{_parameter}
+    </select>
+
+    <select id="selectByCollectingDeviceTypeId" parameterType="integer" resultType="cn.turing.firecontrol.device.entity.DeviceCollectingDevice">
+        SELECT * FROM `device_collecting_device` WHERE DEL_FLAG = '0' AND  COLLECTING_DEVIC_TYPE_ID=#{id}
+    </select>
+
+    <!-- 获取所有的厂商-->
+    <select id="getManufacturer" resultType="String" >
+        SELECT DISTINCT b.`MANUFACTURER` FROM `device_collecting_device` a,`device_collecting_device_type` b WHERE a.DEL_FLAG = '0' AND  a.`COLLECTING_DEVIC_TYPE_ID`=b.id
+    </select>
+
+    <!-- 获取所有的类型-->
+    <select id="getEquipmentType" resultType="String" >
+        SELECT DISTINCT b.`EQUIPMENT_TYPE` FROM `device_collecting_device` a,`device_collecting_device_type` b WHERE  a.DEL_FLAG = '0' AND a.`COLLECTING_DEVIC_TYPE_ID`=b.id
+    </select>
+
+    <!--网关删除前查询1.5 -->
+    <select id="deleteCollectingQuery" parameterType="integer" resultType="String">
+        SELECT DISTINCT TENANT_ID FROM `device_collecting_device` WHERE DEL_FLAG = '0' AND  COLLECTING_DEVIC_TYPE_ID=#{id}
+    </select>
+
+    <!-- 获取所有的厂商-->
+    <select id="getAddManufacturer" resultMap="map" >
+          SELECT DISTINCT b.`MANUFACTURER_ID` ID,c.`COLLECTING_MANUFACTURER` MANUFACTURER FROM `device_collecting_device` a LEFT JOIN`device_collecting_device_type` b ON a.`COLLECTING_DEVIC_TYPE_ID`=b.id LEFT JOIN `device_collecting_manufacturer` c ON b.`MANUFACTURER_ID` = c.`ID` WHERE a.DEL_FLAG = '0'
+    </select>
+
+
+</mapper>

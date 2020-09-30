@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceFireDoorMapper">
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.device.entity.DeviceFireDoor">
+    <id column="ID" jdbcType="BIGINT" property="id" />
+    <result column="BUILDING_ID" jdbcType="INTEGER" property="buildingId" />
+    <result column="DOOR_NAME" jdbcType="VARCHAR" property="doorName" />
+    <result column="DOOR_NORMAL_STATUS" jdbcType="CHAR" property="doorNormalStatus" />
+    <result column="FLOOR" jdbcType="INTEGER" property="floor" />
+    <result column="POSITION_DESCRIPTION" jdbcType="VARCHAR" property="positionDescription" />
+    <result column="POSITION_SIGN" jdbcType="VARCHAR" property="positionSign" />
+    <result column="SENSOR_NUM" jdbcType="INTEGER" property="sensorNum" />
+    <result column="DOOR_STATUS" jdbcType="VARCHAR" property="doorStatus" />
+    <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag" />
+    <result column="CRT_USER_NAME" jdbcType="VARCHAR" property="crtUserName" />
+    <result column="CRT_USER_ID" jdbcType="INTEGER" property="crtUserId" />
+    <result column="CRT_TIME" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="UPD_USER_NAME" jdbcType="VARCHAR" property="updUserName" />
+    <result column="UPD_USER_ID" jdbcType="VARCHAR" property="updUserId" />
+    <result column="UPD_TIME" jdbcType="TIMESTAMP" property="updTime" />
+    <result column="DEPART_ID" jdbcType="VARCHAR" property="departId" />
+    <result column="TENANT_ID" jdbcType="VARCHAR" property="tenantId" />
+  </resultMap>
+
+  <resultMap id="VoResultMap"  type="cn.turing.firecontrol.device.vo.FireDoorVo">
+    <id column="ID" jdbcType="BIGINT" property="id" />
+    <result column="BUILDING_ID" jdbcType="INTEGER" property="buildingId" />
+    <result column="DOOR_NAME" jdbcType="VARCHAR" property="doorName" />
+    <result column="DOOR_NORMAL_STATUS" jdbcType="CHAR" property="doorNormalStatus" />
+    <result column="FLOOR" jdbcType="INTEGER" property="floor" />
+    <result column="POSITION_DESCRIPTION" jdbcType="VARCHAR" property="positionDescription" />
+    <result column="POSITION_SIGN" jdbcType="VARCHAR" property="positionSign" />
+    <result column="SENSOR_NUM" jdbcType="INTEGER" property="sensorNum" />
+    <result column="DOOR_STATUS" jdbcType="VARCHAR" property="doorStatus" />
+    <result column="B_NAME" jdbcType="VARCHAR" property="buildingName" />
+  </resultMap>
+
+  <select id="listFireDoor" parameterType="cn.turing.firecontrol.device.entity.DeviceFireDoor"
+     resultMap="VoResultMap">
+        SELECT door.ID,
+               door.BUILDING_ID,
+               door.DOOR_NAME,
+               door.DOOR_NORMAL_STATUS,
+               door.FLOOR,
+               door.POSITION_DESCRIPTION,
+               door.POSITION_SIGN,
+               door.SENSOR_NUM,
+               door.DOOR_STATUS,
+               building.B_NAME
+        FROM device_fire_door door
+          JOIN  device_building  building  ON door.BUILDING_ID = building.ID
+        WHERE door.DEL_FLAG  = '0'
+          AND building.DEL_FLAG = '0'
+       <if test="id != null">
+          AND door.id = #{id}
+       </if>
+       <if test="buildingId != null">
+          AND door.BUILDING_ID = #{buildingId}
+       </if>
+       <if test="doorName != null and doorName != ''">
+          AND door.DOOR_NAME like CONCAT('%',#{doorName},'%')
+       </if>
+       <if test="doorNormalStatus != null and doorNormalStatus != ''">
+          AND door.DOOR_NORMAL_STATUS = #{doorNormalStatus}
+       </if>
+       <if test="floor != null">
+          AND door.FLOOR = #{floor}
+       </if>
+       <if test="positionDescription != null and positionDescription != ''">
+          AND door.POSITION_DESCRIPTION = CONCAT('%',#{positionDescription},'%')
+       </if>
+       <if test="positionSign != null and positionSign != ''">
+          AND (door.POSITION_SIGN   &lt;&gt; ''  OR door.POSITION_SIGN is not null)
+       </if>
+       <if test="sensorNum != null">
+          AND door.SENSOR_NUM = #{sensorNum}
+       </if>
+  </select>
+
+    <select id="getFireDoorNormalStatus" resultType="java.lang.String">
+        SELECT
+             door.DOOR_NORMAL_STATUS
+          FROM device_sensor sensor
+              JOIN device_sensor_fd_ext ext ON sensor.ID = ext.ID
+              JOIN device_fire_door door ON door.ID = ext.FIRE_DOOR_ID
+          WHERE sensor.DEL_FLAG = '0'
+             AND door.DEL_FLAG = '0'
+             AND ext.DEL_FLAG = '0'
+             AND sensor.SENSOR_NO = #{sensorNo}
+          LIMIT 0,1
+    </select>
+
+    <update id="increaseSensorNum">
+        UPDATE device_fire_door
+          SET SENSOR_NUM = SENSOR_NUM + 1
+        WHERE ID = #{id}
+    </update>
+
+    <update id="decreaseSensorNum">
+        UPDATE device_fire_door
+          SET SENSOR_NUM = SENSOR_NUM - 1
+        WHERE ID = #{id}
+          AND SENSOR_NUM &gt;= 1
+    </update>
+
+    <update id="updateDoorStatus">
+        UPDATE device_fire_door
+          SET DOOR_STATUS = #{status}
+        WHERE ID = #{id}
+    </update>
+</mapper>

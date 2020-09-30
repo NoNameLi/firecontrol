@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>WebSocket测试</title>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function WebSocketTest()
+        {
+            debugger;
+            if ("WebSocket" in window)
+            {
+                $('div').append("<p>开始连接WebSocket</p>");
+
+                // 打开一个 web socket
+                var ws = new WebSocket("ws://localhost:2345/alarm/websocket?userId=cLz9jtRa");
+
+                ws.onopen = function()
+                {
+                    // Web Socket 已连接上，使用 send() 方法发送数据
+                    $('div').append("<p>连接成功 " + new Date() +"</p>");
+                };
+
+                ws.onmessage = function (evt)
+                {
+                    var received_msg = evt.data;
+                    $('div').append("<p>" + new Date() +"接收的数据: &nbsp;&nbsp;" + received_msg +"</p>");
+                };
+
+                ws.onclose = function()
+                {
+                    // 关闭 websocket
+                    $('div').append("<p>连接关闭:" + new Date() +"</p>");
+                };
+            }
+
+            else
+            {
+                // 浏览器不支持 WebSocket
+                alert("您的浏览器不支持 WebSocket!");
+            }
+        }
+    </script>
+
+</head>
+<body>
+
+<div>
+
+</div>
+<script type="text/javascript">
+    WebSocketTest();
+</script>
+</body>
+</html>

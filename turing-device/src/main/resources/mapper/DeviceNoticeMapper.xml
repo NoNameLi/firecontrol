@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceNoticeMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceNotice" id="deviceNoticeMap">
+        <result property="id" column="ID"/>
+        <result property="notice" column="NOTICE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <resultMap type="Map" id="map">
+        <result property="id" column="ID"/>
+        <result property="notice" column="NOTICE"/>
+    </resultMap>
+
+
+    <!---查看报警等级绑定的通知方式-->
+    <select id="selectByAlarmLevelIdResult" parameterType="String" resultMap="deviceNoticeMap">
+        SELECT ID,NOTICE FROM `device_notice` WHERE id IN(${_parameter})
+    </select>
+
+    <!---查看报警，或者故障的通知方式-->
+    <select id="selectByNoticeTypeResult" parameterType="String" resultMap="deviceNoticeMap">
+        SELECT ID,NOTICE FROM `device_notice` WHERE id IN(${_parameter} )
+    </select>
+
+
+    <!---批量获取通知方式-->
+    <select id="getByIds" parameterType="String" resultType="String">
+        SELECT NOTICE FROM `device_notice` WHERE id IN(${_parameter})
+    </select>
+    
+    <!--查询所有的通知方式-->
+    <select id="getAll" resultMap="map">
+        SELECT ID,NOTICE FROM `device_notice`
+    </select>
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceDataDictionaryMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceDataDictionary" id="deviceDataDictionaryMap">
+        <result property="id" column="ID"/>
+        <result property="parmType" column="PARM_TYPE"/>
+        <result property="parmName" column="PARM_NAME"/>
+        <result property="parmValue" column="PARM_VALUE"/>
+        <result property="parentType" column="PARENT_TYPE"/>
+        <result property="parentValue" column="PARENT_VALUE"/>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceHardwareFacilitiesMapper" >
+  <resultMap id="deviceHardwareFacilities" type="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities" >
+      <id column="ID" property="id" jdbcType="INTEGER" />
+      <result column="OID" property="oid" jdbcType="INTEGER" />
+      <result column="HYDRANT_NAME" property="hydrantName" jdbcType="VARCHAR" />
+      <result column="AREA" property="area" jdbcType="VARCHAR" />
+      <result column="ZXQY" property="zxqy" jdbcType="CHAR" />
+      <result column="FACILITY_TYPE" property="facilityType" jdbcType="CHAR" />
+      <result column="HYDRANT_TYPE" property="hydrantType" jdbcType="CHAR" />
+      <result column="OUTLET" property="outlet" jdbcType="CHAR" />
+      <result column="OUTLET_TYPE_ONE" property="outletTypeOne" jdbcType="CHAR" />
+      <result column="OUTLET_VALUE_ONE" property="outletValueOne" jdbcType="INTEGER" />
+      <result column="OUTLET_TYPE_TWO" property="outletTypeTwo" jdbcType="CHAR" />
+      <result column="OUTLET_VALUE_TWO" property="outletValueTwo" jdbcType="INTEGER" />
+      <result column="OUTLET_TYPE_THREE" property="outletTypeThree" jdbcType="CHAR" />
+      <result column="OUTLET_VALUE_THREE" property="outletValueThree" jdbcType="INTEGER" />
+      <result column="PROTECTION_RADIUS" property="protectionRadius" jdbcType="INTEGER" />
+      <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+      <result column="WATER_PIPE" property="waterPipe" jdbcType="CHAR" />
+      <result column="GIS" property="gis" jdbcType="VARCHAR" />
+      <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+      <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+      <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+      <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+      <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+      <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+      <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+      <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+      <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <!--查询所有6位编码-->
+    <select id="selectAllZxqy" parameterType="String" resultMap="deviceHardwareFacilities">
+       SELECT * FROM device_hardware_facilities  WHERE  DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''">
+            AND `FACILITY_TYPE` = #{_parameter }
+        </if>
+       ORDER BY ZXQY
+    </select>
+
+    <!--根据6位编码查询室外消防栓  id-->
+    <select id="selectByZxqzResultIds"  resultType="Integer" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities">
+        SELECT id FROM device_hardware_facilities where DEL_FLAG = '0'
+        <if test="zxqy != null and zxqy != ''">
+            AND ZXQY like '${zxqy}'
+        </if>
+        <if test="facilityType != null and facilityType != ''">
+            AND `FACILITY_TYPE` = #{facilityType}
+        </if>
+    </select>
+
+
+    <!-- 分页查询  根据条件搜索-->
+    <select id="selectQuery"  resultMap="deviceHardwareFacilities" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities">
+        SELECT * FROM `device_hardware_facilities`
+        WHERE  DEL_FLAG='0'
+        <if test="ids!=null">
+            AND ID in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="hardwareFacilities.hydrantName != null and hardwareFacilities.hydrantName != '' ">
+            AND `HYDRANT_NAME` LIKE  '%${hardwareFacilities.hydrantName}%'
+        </if>
+        <if test="hardwareFacilities.hydrantType != null and hardwareFacilities.hydrantType != '-1' ">
+            AND `HYDRANT_TYPE` = #{hardwareFacilities.hydrantType}
+        </if>
+        <if test="hardwareFacilities.outlet != null and hardwareFacilities.outlet != '-1' ">
+            AND `OUTLET` = #{hardwareFacilities.outlet}
+        </if>
+        <if test="hardwareFacilities.waterPipe != null and hardwareFacilities.waterPipe != '-1' ">
+            AND `WATER_PIPE` = #{hardwareFacilities.waterPipe}
+        </if>
+        <if test="hardwareFacilities.gis == '0'.toString()">
+            AND (`GIS` = '' or `GIS` is NULL )
+        </if>
+        <if test="hardwareFacilities.gis == '1'.toString()">
+            AND `GIS` != ''
+        </if>
+        <if test="hardwareFacilities.positionDescription != null and hardwareFacilities.positionDescription != '' ">
+            AND `POSITION_DESCRIPTION` LIKE '%${hardwareFacilities.positionDescription}%'
+        </if>
+        <if test="hardwareFacilities.facilityType != null and hardwareFacilities.facilityType != ''">
+            AND `FACILITY_TYPE` = #{hardwareFacilities.facilityType}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+
+
+    <!-- 查看硬件设施名称是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities" resultType="Integer">
+        SELECT COUNT(*) FROM `device_hardware_facilities` WHERE DEL_FLAG = '0'
+        <if test="hydrantName != null and hydrantName != '' ">
+            AND `HYDRANT_NAME` = #{hydrantName}
+        </if>
+        <if test="facilityType != null and facilityType != ''">
+            AND `FACILITY_TYPE` = #{facilityType}
+        </if>
+    </select>
+
+    <select id="getHardwareFacilities" parameterType="String" resultMap="deviceHardwareFacilities">
+        SELECT b.* FROM device_hardware_facilities b
+        LEFT JOIN device_sensor s ON s.HYDRANT_ID = b.ID
+        WHERE  b.DEL_FLAG = '0'
+        <if test="zxqy != null and zxqy != ''">
+            AND b.ZXQY LIKE #{zxqy}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.CHANNEL_ID = #{channelId}
+        </if>
+        <if test="facilityType != null and facilityType != ''">
+            AND b.FACILITY_TYPE = #{facilityType}
+        </if>
+        GROUP by b.ID
+        order by b.HYDRANT_NAME ASC
+    </select>
+
+    <!-- 根据硬件设施的名称查询硬件设施,和类型查询-->
+    <select id="selectByNameAndType" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities" resultMap="deviceHardwareFacilities">
+        SELECT * FROM `device_hardware_facilities` WHERE DEL_FLAG = '0'
+        <if test="hydrantName != null and hydrantName != '' ">
+            AND `HYDRANT_NAME` = #{hydrantName}
+        </if>
+        <if test="facilityType != null and facilityType != ''">
+            AND `FACILITY_TYPE` = #{facilityType}
+        </if>
+    </select>
+
+    <!-- 根据硬件设施的名称查询硬件设施,和类型和代号查询-->
+    <select id="selectByNameAndTypeAndCode" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities" resultMap="deviceHardwareFacilities">
+        SELECT * FROM `device_hardware_facilities` WHERE DEL_FLAG = '0'
+        <if test="hydrantName != null and hydrantName != '' ">
+            AND `HYDRANT_NAME` LIKE '%${hydrantName}%'
+        </if>
+        <if test="facilityType != null and facilityType != ''">
+            AND `FACILITY_TYPE` = #{facilityType}
+        </if>
+        <if test="zxqy != null and zxqy != '' and zxqy != '-1'">
+            AND `ZXQY` LIKE  '${zxqy}'
+        </if>
+    </select>
+
+
+    <select id="getById" parameterType="Integer" resultMap="deviceHardwareFacilities">
+        SELECT * FROM device_hardware_facilities WHERE DEL_FLAG='0' AND ID=#{_parameter}
+    </select>
+
+    <select id="getAll" parameterType="cn.turing.firecontrol.device.entity.DeviceHardwareFacilities" resultMap="deviceHardwareFacilities">
+        SELECT * FROM device_hardware_facilities WHERE DEL_FLAG='0' AND FACILITY_TYPE=#{_parameter}
+    </select>
+
+    <select id="selectByHydrantNameLike" resultMap="deviceHardwareFacilities" parameterType="java.lang.String">
+        SELECT * FROM `device_hardware_facilities` where DEL_FLAG = '0' AND HYDRANT_NAME LIKE '%${hydrantName}%'
+        <if test="tenantId != null and tenantId != ''">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <select id="getHydrantName" resultType="String">
+         SELECT HYDRANT_NAME FROM device_hardware_facilities WHERE DEL_FLAG = '0'
+    </select>
+
+    <select id="selectByHydrantName" resultMap="deviceHardwareFacilities">
+         SELECT * FROM device_hardware_facilities WHERE DEL_FLAG = '0' AND HYDRANT_NAME = #{_parameter}
+    </select>
+
+    <select id="getAllAndDelflag" resultMap="deviceHardwareFacilities">
+         SELECT DISTINCT HYDRANT_NAME,GIS FROM device_hardware_facilities WHERE FACILITY_TYPE = #{_parameter}
+    </select>
+    <select id="getAllGis" resultType="cn.turing.firecontrol.device.vo.DeviceBuildingVo" >
+        select 2 as type,id,gis,HYDRANT_NAME as name from device_hardware_facilities where DEL_FLAG='0'
+    </select>
+</mapper>

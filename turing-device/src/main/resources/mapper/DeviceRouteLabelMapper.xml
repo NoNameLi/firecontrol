@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceRouteLabelMapper" >
+  <resultMap id="deviceRouteLabelMap" type="cn.turing.firecontrol.device.entity.DeviceRouteLabel" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="ROUTE_ID" property="routeId" jdbcType="INTEGER" />
+    <result column="LABEL_ID" property="labelId" jdbcType="INTEGER" />
+    <result column="LABEL_FLAG" property="labelFlag" jdbcType="CHAR" />
+    <result column="ROUTE_FLAG" property="routeFlag" jdbcType="CHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+    <select id="selectByRouteId" resultType="Integer">
+        SELECT `LABEL_ID` FROM `device_route_label` WHERE DEL_FLAG = '0'
+        <if test="routeId != null">
+           AND `ROUTE_ID` = #{routeId}
+        </if>
+        <if test="routeflag != null and routeflag!=''">
+          AND `ROUTE_FLAG` = #{routeflag}
+        </if>
+    </select>
+
+    <select id="getIndoorCount" resultType="cn.turing.firecontrol.device.vo.LabelCountVo">
+        SELECT
+        count(CASE l.`RESULT_FLAG`='0' WHEN 1 THEN 0 END) AS uncheckedCount,
+        count(CASE l.`RESULT_FLAG`='1' WHEN 1 THEN 0 END ) AS normalCount,
+        count(CASE l.`RESULT_FLAG`='2' WHEN 1 THEN 0 END ) AS abnormalCount,
+        count(CASE l.`RESULT_FLAG`='3' WHEN 1 THEN 0 END ) AS jumpCount
+        FROM device_route_label r
+        JOIN device_indoor_label l ON l.ID = r.LABEL_ID
+        JOIN device_inspection_route i ON r.ROUTE_ID = i.id
+        WHERE r.DEL_FLAG = '0' AND r.ROUTE_FLAG='0' AND LABEL_FLAG='0'
+        <if test="routeId != null and routeId != null">
+           AND r.ROUTE_ID=#{routeId}
+        </if>
+    </select>
+
+  <select id="getOutdoorCount" resultType="cn.turing.firecontrol.device.vo.LabelCountVo">
+    SELECT
+    count(CASE l.`RESULT_FLAG`='0' WHEN 1 THEN 0 END) AS uncheckedCount,
+    count(CASE l.`RESULT_FLAG`='1' WHEN 1 THEN 0 END ) AS normalCount,
+    count(CASE l.`RESULT_FLAG`='2' WHEN 1 THEN 0 END ) AS abnormalCount,
+    count(CASE l.`RESULT_FLAG`='3' WHEN 1 THEN 0 END ) AS jumpCount
+    FROM device_route_label r
+    JOIN device_outdoor_label l ON l.ID = r.LABEL_ID
+    JOIN device_inspection_route i ON r.ROUTE_ID = i.id
+    WHERE r.DEL_FLAG = '0' AND r.ROUTE_FLAG='0' AND LABEL_FLAG='1'
+    <if test="routeId != null and routeId != null">
+      AND r.ROUTE_ID=#{routeId}
+    </if>
+  </select>
+
+    <delete id="deleteByLabel">
+       DELETE FROM `device_route_label` WHERE ROUTE_ID=#{routeId} AND `ROUTE_FLAG` = #{routeflag} AND LABEL_ID IN(${labelIds})
+    </delete>
+
+    <select id="selectByLabelId" resultMap="deviceRouteLabelMap" parameterType="cn.turing.firecontrol.device.entity.DeviceRouteLabel">
+        SELECT * FROM `device_route_label` WHERE DEL_FLAG = '0'
+        <if test="labelId != null and labelId != null">
+            AND LABEL_ID=#{labelId}
+        </if>
+        <if test="labelFlag != null and labelFlag != null">
+            AND LABEL_FLAG=#{labelFlag}
+        </if>
+        <if test="routeFlag != null and routeFlag != null">
+            AND ROUTE_FLAG=#{routeFlag}
+        </if>
+    </select>
+
+    <select id="getByRouteId" resultType="Integer">
+        SELECT `LABEL_ID` FROM `device_route_label` WHERE DEL_FLAG = '0'
+        <if test="routeId != null">
+            AND `ROUTE_ID` = #{routeId}
+        </if>
+        <if test="routeflag != null and routeflag!=''">
+            AND `ROUTE_FLAG` = #{routeflag}
+        </if>
+        <if test="tenantId != null and tenantId !=''">
+            AND `TENANT_ID` = #{tenantId}
+        </if>
+    </select>
+
+    <select id="selectByLabelIdCount" resultType="Integer" >
+        SELECT COUNT(ID)FROM `device_route_label` WHERE DEL_FLAG = '0'
+        <if test="labelFlag != null and labelFlag != null">
+            AND LABEL_FLAG=#{labelFlag}
+        </if>
+        <if test="routeFlag != null and routeFlag != null">
+            AND ROUTE_FLAG=#{routeFlag}
+        </if>
+        <if test="labelId != null and labelId != null">
+            AND LABEL_ID=#{labelId}
+        </if>
+    </select>
+
+    <select id="selectByLabelIdResultRouteId" resultType="Integer" >
+        SELECT DISTINCT ROUTE_ID FROM `device_route_label` WHERE DEL_FLAG = '0'
+        <if test="labelFlag != null and labelFlag != null">
+            AND LABEL_FLAG=#{labelFlag}
+        </if>
+        <if test="routeFlag != null and routeFlag != null">
+            AND ROUTE_FLAG=#{routeFlag}
+        </if>
+        <if test="labelId != null and labelId != null">
+            AND LABEL_ID=#{labelId}
+        </if>
+    </select>
+
+
+</mapper>

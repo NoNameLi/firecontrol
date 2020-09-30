@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceVideoGroupMapper" >
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.device.entity.DeviceVideoGroup" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="DEVICE_GROUP_NAME" property="deviceGroupName" jdbcType="VARCHAR" />
+    <result column="DEVICE_GROUP_IMAGE" property="deviceGroupImage" jdbcType="VARCHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="baseColumn" >
+    ID,DEVICE_GROUP_NAME,DEVICE_GROUP_IMAGE,DEL_FLAG,CRT_USER_NAME,CRT_USER_ID,CRT_TIME,UPD_USER_NAME,UPD_USER_ID,UPD_TIME,DEPART_ID,TENANT_ID
+  </sql>
+
+  <select id="selectByGroupName" resultMap="BaseResultMap">
+    select <include refid="baseColumn" />
+    from device_video_group
+    where DEVICE_GROUP_NAME = #{groupName} and DEL_FLAG = '0'
+  </select>
+  
+  <!--<resultMap id="DeviceTreeResult" type="cn.turing.firecontrol.device.entity.DeviceVideoGroup">
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="DEVICE_GROUP_NAME" property="deviceGroupName" jdbcType="VARCHAR" />
+    <collection property="deviceVideoExts" ofType="cn.turing.firecontrol.device.entity.DeviceVideoExt">
+      <id column="DEVICE_VIDEO_ID" property="id"/>
+      <result column="DEVICE_VIDEO_NAME" property="deviceVideoName"/>
+      <result column="SENSOR_NO" property="sensorNo"/>
+      <result column="ANALYSIS_SOLUTION_ID" property="analysisSolutionId"/>
+      <result column="VIDEO_LIVE_ADDRESS" property="videoLiveAddress"/>
+      <result column="ALARM_MSG" property="alarmMsg"/>
+    </collection>
+  </resultMap>-->
+
+  <resultMap id="DeviceTreeResult" type="map">
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="DEVICE_GROUP_NAME" property="deviceGroupName" jdbcType="VARCHAR" />
+    <result column="IS_FOLDED" property="isFolded" javaType="boolean" />
+    <collection property="deviceVideoExts" ofType="map" javaType="ArrayList">
+      <id column="DEVICE_VIDEO_ID" property="id"/>
+      <result column="DEVICE_VIDEO_NAME" property="deviceVideoName"/>
+      <result column="SENSOR_NO" property="sensorNo"/>
+      <result column="ANALYSIS_SOLUTION_NAME" property="analysisSolutionName"/>
+      <result column="VIDEO_LIVE_ADDRESS" property="videoLiveAddress" typeHandler="cn.turing.firecontrol.device.config.mybatis.JsonObjectTypeHandler"/>
+      <result column="ALARM_MSG" property="alarmMsg" typeHandler="cn.turing.firecontrol.device.config.mybatis.JsonArrayTypeHandler"/>
+      <result column="SHOW_FLAG" property="isShow" javaType="boolean"/>
+    </collection>
+  </resultMap>
+
+  <select id="queryDeviceTree" resultMap="DeviceTreeResult">
+    select dvg.ID ID,dvg.DEVICE_GROUP_NAME DEVICE_GROUP_NAME,dve.Id DEVICE_VIDEO_ID,dve.DEVICE_VIDEO_NAME DEVICE_VIDEO_NAME,dve.SENSOR_NO SENSOR_NO,true IS_FOLDED,
+            dvas.ANALYSIS_SOLUTION_NAME ANALYSIS_SOLUTION_NAME,dve.VIDEO_LIVE_ADDRESS VIDEO_LIVE_ADDRESS,dve.ALARM_MSG ALARM_MSG,dve.SHOW_FLAG SHOW_FLAG
+    from device_video_group dvg
+    left join device_video_ext dve on dvg.ID = dve.DEVICE_GROUP_ID
+    left join device_video_analysis_solution dvas on dvas.ID = dve.ANALYSIS_SOLUTION_ID
+    where dvg.DEL_FLAG = "0"
+    <if test="deviceNoOrName != null and deviceNoOrName != ''">
+      and (dve.SENSOR_NO like '%${deviceNoOrName}%' or dve.DEVICE_VIDEO_NAME like '%${deviceNoOrName}%')
+    </if>
+    <if test=" groupId!= null and  groupId!= ''">
+      and dve.DEVICE_GROUP_ID = #{groupId}
+    </if>
+    <if test=" sensorNo!= null and  sensorNo!= ''">
+      and dve.SENSOR_NO = #{sensorNo}
+    </if>
+    <if test=" deviceName!= null and  deviceName!= ''">
+      and dve.DEVICE_VIDEO_NAME = #{deviceName}
+    </if>
+    <if test=" hasSolution!= null">
+      <choose>
+        <when test="hasSolution">
+          AND dve.ANALYSIS_SOLUTION_ID is not null
+        </when>
+        <otherwise>
+          AND dve.ANALYSIS_SOLUTION_ID is null
+        </otherwise>
+      </choose>
+    </if>
+  </select>
+
+  <select id="queryBySensorNos" resultType="map">
+    select  dve.SENSOR_NO sensorNo, dvg.DEVICE_GROUP_IMAGE image ,ds.POSITION_SIGN positionSign from device_video_group dvg
+    join  device_video_ext dve on dve.DEVICE_GROUP_ID = dvg.ID
+    join device_sensor ds on ds.ID = dve.ID
+    where dve.SENSOR_NO in
+    <foreach item="item" index="index" collection="sensorNos"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </select>
+
+  <update id="removePositionSignByGroup">
+    UPDATE device_sensor
+    SET POSITION_SIGN = NULL
+    WHERE
+        id IN (
+            SELECT
+                id
+            FROM
+                device_video_ext
+            WHERE
+                DEVICE_GROUP_ID = #{groupId}
+        )
+  </update>
+
+</mapper>

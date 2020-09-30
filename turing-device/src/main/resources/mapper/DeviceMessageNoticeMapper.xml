@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceMessageNoticeMapper" >
+      <resultMap id="deviceMessageNotice" type="cn.turing.firecontrol.device.entity.DeviceMessageNotice" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+          <id column="ID" property="id" jdbcType="INTEGER" />
+          <result column="NOTICE_TYPE" property="noticeType" jdbcType="CHAR" />
+          <result column="NOTICE_ID" property="noticeId" jdbcType="INTEGER" />
+          <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+          <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+          <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+          <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+          <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+          <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+          <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+          <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+      </resultMap>
+
+      <!-- 根据报警类型查询出已经添加的通知方式-->
+    <select id="selectByNoticeType" parameterType="String" resultType="Integer">
+         SELECT NOTICE_ID FROM `device_message_notice` WHERE 1=1
+        <if test="noticeType != null and noticeType != ''">
+            AND `NOTICE_TYPE`=#{noticeType}
+        </if>
+        <if test="tenantId != null and tenantId != ''">
+            AND `TENANT_ID`=#{tenantId}
+        </if>
+    </select>
+
+</mapper>

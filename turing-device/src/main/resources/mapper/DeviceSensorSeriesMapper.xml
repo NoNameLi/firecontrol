@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorSeriesMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceSensorSeries" id="deviceSensorSeriesMap">
+        <result property="id" column="ID"/>
+        <result property="color" column="COLOR"/>
+        <result property="sensorType" column="SENSOR_TYPE"/>
+        <result property="type" column="TYPE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="senesorTypeId" column="SENSOR_TYPE_ID"/>
+    </resultMap>
+
+    <resultMap type="Map" id="map">
+        <result property="id" column="ID"/>
+        <result property="color" column="COLOR"/>
+        <result property="sensorManufacturer" column="SENSOR_MANUFACTURER"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="model" column="MODEL"/>
+        <result property="channelId" column="CHANNEL_ID"/>
+        <result property="seriesId" column="SERIES_ID"/>
+    </resultMap>
+
+    <!--判断传感器系列是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorSeries" resultType="Integer">
+        SELECT COUNT(*) FROM `device_sensor_series`  WHERE DEL_FLAG = '0'
+        <if test="sensorType != null and sensorType != ''">
+            AND `SENSOR_TYPE`=#{sensorType}
+        </if>
+    </select>
+
+    <!-- 分页查询  搜索传感器系列1.4-->
+<!--    <select id="selectPageList"  resultMap="deviceSensorSeriesMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorSeries">
+        SELECT ID,SENSOR_TYPE,COLOR FROM `device_sensor_series`  WHERE DEL_FLAG = '0'
+        <if test="sensorType != null and sensorType != ''">
+            AND `SENSOR_TYPE` like '%${sensorType}%'
+        </if>
+        order by CRT_TIME DESC
+    </select>-->
+
+    <!-- 分页查询  搜索传感器系列1.5-->
+        <select id="selectPageList"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType">
+            SELECT
+            b.`ID` ID,
+            c.`SENSOR_MANUFACTURER` SENSOR_MANUFACTURER,
+            b.`EQUIPMENT_TYPE` EQUIPMENT_TYPE,
+            b.`MODEL` MODEL,
+            b.`CHANNEL_ID` CHANNEL_ID,
+            a.`ID` SERIES_ID,
+            a.`COLOR` COLOR
+            FROM `device_sensor_series` a LEFT JOIN `device_sensor_type` b ON a.SENSOR_TYPE_ID = b.id LEFT JOIN `device_sensor_manufacturer` c ON b.`MANUFACTURER_ID` = c.`ID`  WHERE  a.DEL_FLAG = '0'
+            <if test="channelId != null and channelId >0">
+                AND  b.`CHANNEL_ID` = #{channelId}
+            </if>
+            <if test="manufacturer != null and manufacturer !='' and manufacturer != '全部'">
+                AND b.`MANUFACTURER` = #{manufacturer}
+            </if>
+            <if test="model != null and model != '' and model != '全部'">
+                AND b.`MODEL` = #{model}
+            </if>
+            <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+                AND b.`EQUIPMENT_TYPE` = #{equipmentType}
+            </if>
+            order by a.CRT_TIME DESC
+        </select>
+
+    <!-- 传感器类型的下拉框，选择传感器-->
+    <select id="selectedType" resultType="String">
+        SELECT SENSOR_TYPE FROM `device_sensor_series`  WHERE DEL_FLAG = '0'  ORDER BY CRT_TIME DESC
+    </select>
+
+    <!-- 根据传感器列表的id返回传感器系列的id-->
+    <!--<select id="selectBySensorId" parameterType="Integer" resultType="Integer">
+        SELECT ID FROM `device_sensor_series` WHERE DEL_FLAG = '0' AND SENSOR_TYPE =(SELECT EQUIPMENT_TYPE FROM `device_sensor_type` WHERE id =(SELECT `SENSOR_TYPE_ID` FROM `device_sensor` WHERE  id = #{id}))
+    </select>-->
+    <select id="selectBySensorId" parameterType="Integer" resultType="Integer">
+        select dss.ID from `device_sensor_series` dss
+        join device_sensor ds on ds.SENSOR_TYPE_ID = dss.SENSOR_TYPE_ID
+        where dss.DEL_FLAG = '0' and ds.id = #{id}
+    </select>
+
+    <!-- 根据传感器类型查询传感器系列-->
+    <select id="selectBySensorType" resultMap="deviceSensorSeriesMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorSeries">
+        SELECT * FROM `device_sensor_series` where  DEL_FLAG = '0' AND SENSOR_TYPE=#{equipmentType}
+    </select>
+
+    <!-- 根据传感器类型id查看传感器系列id-->
+    <select id="selectBySensorTypeId" resultMap="deviceSensorSeriesMap" parameterType="Integer">
+        SELECT * FROM `device_sensor_series` where  DEL_FLAG = '0' AND SENSOR_TYPE_ID=#{id}
+    </select>
+</mapper>

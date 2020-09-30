@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorMapper">
+
+    <sql id="baseColumn">
+        ID,BUILDING_ID,CHANNEL_ID,SENSOR_TYPE_ID,CD_ID,FIELD_STATUS,STATUS,STATUS_TIME,SENSOR_NO,FLOOR,POSITION_DESCRIPTION
+        POSITION_SIGN,DEL_FLAG,CRT_USER_NAME,CRT_USER_ID,CRT_TIME,UPD_USER_NAME,UPD_USER_ID,CRT_TIME,UPD_USER_NAME,
+        UPD_USER_ID,UPD_TIME,DEPART_ID,EQUIPMENT_TYPE,HYDRANT_ID
+    </sql>
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceSensor" id="deviceSensorMap">
+        <result property="id" column="ID"/>
+        <result property="buildingId" column="BUILDING_ID"/>
+        <result property="channelId" column="CHANNEL_ID"/>
+        <result property="sensorTypeId" column="SENSOR_TYPE_ID"/>
+        <result property="cdId" column="CD_ID"/>
+        <result property="fieldStatus" column="FIELD_STATUS"/>
+        <result property="status" column="STATUS"/>
+        <result property="statusTime" column="STATUS_TIME"/>
+        <result property="sensorNo" column="SENSOR_NO"/>
+        <result property="floor" column="FLOOR"/>
+        <result property="positionDescription" column="POSITION_DESCRIPTION"/>
+        <result property="positionSign" column="POSITION_SIGN"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="hydrantId" column="HYDRANT_ID"/>
+    </resultMap>
+
+    <!-- 结果映射 -->
+    <resultMap type="Map" id="queryMap">
+        <!--column指向数据库列名 property指向pojo对象中字段名 -->
+        <result property="id" column="ID"/>
+        <result property="channelId" column="CHANNEL_ID"/>
+        <result column="STATUS" property="status" />
+        <result column="SENSOR_NO" property="sensorNo" />
+        <result column="FLOOR" property="floor" />
+        <result column="POSITION_DESCRIPTION" property="positionDescription" />
+        <result column="POSITION_SIGN" property="positionSign" />
+        <result column="MANUFACTURER" property="manufacturer" />
+        <result column="MODEL" property="model" />
+        <result column="EQUIPMENT_TYPE" property="equipmentType" />
+        <result column="B_NAME" property="bName"/>
+        <result column="BUILDING_ID"  property="buildingId"  />
+        <result column="HYDRANT_ID"  property="hydrantId"  />
+        <result column="HYDRANT_NAME"  property="hydrantName"  />
+    </resultMap>
+
+
+    <resultMap type="cn.turing.firecontrol.device.vo.AbnormalVo" id="abnormalMap">
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="alrmDate" column="ALRM_DATE"/>
+        <result property="sensorNo" column="SENSOR_NO"/>
+        <result property="alrmType" column="ALRM_TYPE"/>
+        <result property="alrmData" column="ALRM_DATA"/>
+        <result property="unit" column="UNIT"/>
+        <result property="alrmCategory" column="ALRM_CATEGORY"/>
+        <result property="positionDescription" column="POSITION_DESCRIPTION"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <!-- 室外传感器的列表映射 -->
+    <resultMap type="Map" id="selectOutdoorQuery">
+        <!--column指向数据库列名 property指向pojo对象中字段名 -->
+        <result property="id" column="ID"/>
+        <result property="channelId" column="CHANNEL_ID"/>
+        <result property="status"  column="STATUS"  />
+        <result property="sensorNo"  column="SENSOR_NO" />
+        <result property="manufacturer" column="MANUFACTURER"  />
+        <result property="model" column="MODEL" />
+        <result property="equipmentType" column="EQUIPMENT_TYPE"  />
+        <result property="facilityType" column="FACILITY_TYPE" />
+        <result property="hydrantName" column="HYDRANT_NAME"  />
+    </resultMap>
+
+    <select id="selectByBuildingId" parameterType="integer" resultMap="deviceSensorMap">
+        SELECT * FROM `device_sensor` WHERE DEL_FLAG = '0'
+        <if test="arg0 != null and  arg0!= ''">
+            AND `BUILDING_ID` = #{arg0}
+        </if>
+        <if test="arg1 != null and  arg1!= ''">
+            AND `CHANNEL_ID` = #{arg1}
+        </if>
+    </select>
+
+    <!--删除查询  -->
+    <select id="selectBySensorTypeId" parameterType="integer" resultType="cn.turing.firecontrol.device.entity.DeviceSensor">
+        SELECT * FROM `device_sensor` WHERE DEL_FLAG = '0' AND SENSOR_TYPE_ID=#{id}
+    </select>
+    <!-- 分页查询  根据条件搜索-->
+    <select id="selectQuery"  resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor">
+        SELECT
+        s.ID,
+        s.STATUS,
+        s.SENSOR_NO,
+        t.MANUFACTURER,
+        t.MODEL,
+        t.EQUIPMENT_TYPE,
+        s.CHANNEL_ID,
+        b.B_NAME,
+        s.FLOOR,
+        s.POSITION_DESCRIPTION,
+        s.POSITION_SIGN,
+        s.BUILDING_ID
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE s.DEL_FLAG='0' AND b.DEL_FLAG='0'
+        <if test="ids != null  ">
+            AND s.BUILDING_ID in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="deviceSensor.manufacturer != null and deviceSensor.manufacturer != '' and deviceSensor.manufacturer != '全部'">
+            AND `MANUFACTURER` = #{deviceSensor.manufacturer}
+        </if>
+        <if test="deviceSensor.model != null and deviceSensor.model != ''">
+            AND `MODEL` = #{deviceSensor.model}
+        </if>
+        <if test="deviceSensor.equipmentType != null and deviceSensor.equipmentType != '' and deviceSensor.equipmentType != '全部'">
+            AND `EQUIPMENT_TYPE` = #{deviceSensor.equipmentType}
+        </if>
+        <if test="deviceSensor.sensorNo != null and deviceSensor.sensorNo != ''">
+            AND `SENSOR_NO` LIKE  '%${deviceSensor.sensorNo}%'
+        </if>
+        <if test="deviceSensor.status != null and deviceSensor.status != '' and deviceSensor.status != '-1'">
+            AND `STATUS` = #{deviceSensor.status}
+        </if>
+        <if test="deviceSensor.positionSign == '0'.toString()">
+            AND (`POSITION_SIGN` = '' or `POSITION_SIGN` is NULL )
+        </if>
+        <if test="deviceSensor.positionSign == '1'.toString()">
+            AND `POSITION_SIGN` != ''
+        </if>
+        <if test="deviceSensor.positionDescription != null and deviceSensor.positionDescription != ''">
+            AND `POSITION_DESCRIPTION` = #{deviceSensor.positionDescription}
+        </if>
+        <if test="deviceSensor.floor != null ">
+            AND `FLOOR` = #{deviceSensor.floor}
+        </if>
+        <if test="deviceSensor.channelId != null  and deviceSensor.channelId >0">
+            AND s.`CHANNEL_ID` = #{deviceSensor.channelId}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="selectCountByType" parameterType="integer" resultType="integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0' AND SENSOR_TYPE_ID=#{id}
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+            AND STATUS &lt;&gt; '3'
+    </select>
+    <select id="selectStatusCount" parameterType="integer" resultType="integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+    </select>
+    <select id="selectAbnormal" parameterType="integer" resultMap="abnormalMap">
+        SELECT
+	    t.EQUIPMENT_TYPE,
+        s.SENSOR_NO,
+	    a.ALRM_DATE,
+        a.ALRM_TYPE,
+        a.ALRM_DATA,
+        a.ALRM_CATEGORY,
+        s.POSITION_DESCRIPTION,
+        a.UNIT,
+        s.TENANT_ID
+        FROM
+	    device_abnormal a
+        LEFT JOIN device_sensor s ON a.EQU_ID = s.ID
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        WHERE a.BUILD_ID = #{buildId}
+        <if test="floor != null and floor != ''">
+            AND  s.FLOOR = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND  s.CHANNEL_ID = #{channelId}
+        </if>
+        ORDER BY
+	    a.ALRM_DATE DESC
+    </select>
+
+    <select id="selectBySensorNo" parameterType="java.lang.String" resultMap="deviceSensorMap">
+        SELECT * FROM `device_sensor` WHERE  DEL_FLAG = '0' AND SENSOR_NO=#{sensorNo}
+    </select>
+
+    <!-- 查看代号是否重复-->
+    <select id="selectByCount" parameterType="String" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0' AND `SENSOR_NO` = #{_parameter}
+    </select>
+
+    <!-- 获取所有的代号，存在Set里面-->
+    <select id="getAllIgnoreTenantSensorNo" resultType="String">
+        SELECT `SENSOR_NO` FROM `device_sensor` WHERE  DEL_FLAG = '0';
+    </select>
+
+    <!-- 获取所有的厂商-->
+    <select id="getManufacturer" resultType="String" >
+        SELECT DISTINCT b.`MANUFACTURER` FROM `device_sensor` a,`device_sensor_type` b WHERE a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id AND trim(a.BUILDING_ID) !=''
+    </select>
+
+    <!-- 获取所有的类型-->
+    <select id="getEquipmentType" resultType="String"  >
+        SELECT DISTINCT b.`EQUIPMENT_TYPE` FROM `device_sensor` a,`device_sensor_type` b WHERE  a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id  AND trim(a.BUILDING_ID) !=''
+    </select>
+
+    <!-- 获取所有的厂商-->
+    <!--<select id="getManufacturerChannelId" resultType="String" parameterType="Integer" >
+        SELECT DISTINCT b.`MANUFACTURER` FROM `device_sensor` a,`device_sensor_type` b WHERE a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id AND trim(a.BUILDING_ID) !=''  AND  b.CHANNEL_ID = #{channelId}
+    </select>-->
+    <select id="getManufacturerChannelId" resultType="String" parameterType="Integer" >
+        SELECT DISTINCT b.`MANUFACTURER` FROM `device_sensor` a,`device_sensor_type` b WHERE a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id  AND  b.CHANNEL_ID = #{channelId}
+    </select>
+
+    <!-- 获取所有的类型-->
+    <!--<select id="getEquipmentTypeChannelId" resultType="String" parameterType="Integer">
+        SELECT DISTINCT b.`EQUIPMENT_TYPE` FROM `device_sensor` a,`device_sensor_type` b WHERE  a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id  AND trim(a.BUILDING_ID) !='' AND  b.CHANNEL_ID = #{channelId}
+    </select>-->
+    <select id="getEquipmentTypeChannelId" resultType="String" parameterType="Integer">
+        SELECT DISTINCT b.`EQUIPMENT_TYPE` FROM `device_sensor` a,`device_sensor_type` b WHERE  a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id AND  b.CHANNEL_ID = #{channelId}
+    </select>
+
+    <!-- 根据建筑id，楼层查询-->
+    <select id="getSensorStatusByBuildAndFloor" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="deviceSensorMap">
+        SELECT * FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''">
+            AND BUILDING_ID = #{buildId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND FLOOR = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND CHANNEL_ID = #{channelId}
+        </if>
+    </select>
+
+    <!-- 根据所属系统id查询-->
+    <select id="selectByChannelId" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="deviceSensorMap">
+        SELECT * FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''" >
+            AND CHANNEL_ID = #{_parameter}
+        </if>
+        AND trim(BUILDING_ID) !=''
+    </select>
+
+    <select id="selectByBuildingIdAndStatus" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="deviceSensorMap">
+        SELECT * FROM device_sensor WHERE  DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''" >
+            AND BUILDING_ID = #{buildId}
+        </if>
+        <if test="hydrantId != null and hydrantId != ''" >
+            AND HYDRANT_ID = #{hydrantId}
+        </if>
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        AND (STATUS=#{status} OR STATUS = #{status1})
+    </select>
+
+    <!--根据传感器的状态分组统计传感器的数 -->
+    <select id="selectByStatusGroup" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="deviceSensorMap">
+       SELECT STATUS,ID  FROM `device_sensor` WHERE DEL_FLAG = '0'
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        <if test="buildingId != null and buildingId >0" >
+            AND BUILDING_ID = #{buildingId}
+        </if>
+    </select>
+
+    <!-- 设备列表，分页查询 不查 未启用的传感器-->
+    <select id="selectByFloorGetSensor"  resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor">
+        SELECT
+        s.ID,
+        s.STATUS,
+        s.SENSOR_NO,
+        t.EQUIPMENT_TYPE,
+        s.CHANNEL_ID,
+        s.POSITION_DESCRIPTION,
+        b.B_NAME
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE `STATUS` !='3' AND s.DEL_FLAG = '0'
+        <if test="floor != null ">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildingId != null ">
+            AND `BUILDING_ID` = #{buildingId}
+        </if>
+        <if test="channelId != null  and channelId >0">
+            AND  s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null  and status !='' and status !='-1'">
+            AND `STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <!-- 根据传感器的栏目id，跟状态查询对应的个数-->
+    <select id="selectByChannelIdAndStatusAndBuilding" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultType="Integer">
+        SELECT COUNT(ID) FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        <if test="buildingId != null and buildingId >0" >
+            AND BUILDING_ID = #{buildingId}
+        </if>
+        <if test="status != null and status != ''" >
+            AND STATUS = #{status}
+        </if>
+        <if test="tenantId != null and tenantId != ''" >
+            AND TENANT_ID = #{tenantId}
+        </if>
+        AND trim(BUILDING_ID) !=''
+    </select>
+    
+    <!-- 批量假删除-->
+    <update id="updateBatch" parameterType="String">
+        UPDATE `device_sensor` SET DEL_FLAG='1' WHERE id IN(${_parameter })
+    </update>
+
+    <select id="selectNotsignCount" parameterType="integer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        AND trim(POSITION_SIGN) = ''
+    </select>
+
+    <select id="selectSignCount" parameterType="integer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        AND trim(POSITION_SIGN) != ''
+    </select>
+
+    <select id="selectFaultCount" parameterType="integer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="hydrantId != null and hydrantId != ''">
+            AND `HYDRANT_ID` = #{hydrantId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        AND `STATUS`in('0','4')
+    </select>
+
+    <select id="selectByHydrantId" parameterType="integer" resultMap="deviceSensorMap">
+        SELECT * FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="hydrantId != null and hydrantId != ''">
+            AND `HYDRANT_ID` = #{hydrantId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        AND `STATUS`in('0','4')
+    </select>
+
+    <!-- 删除硬件设施  根据硬件设施的id查询-->
+    <select id="deleteQueryByHydrantId" parameterType="Integer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="_parameter != null">
+            AND `HYDRANT_ID` = #{_parameter}
+        </if>
+    </select>
+
+
+    <!-- 室外传感器列表-->
+    <select id="selectOutdoorQuery"  resultMap="selectOutdoorQuery" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor">
+        SELECT
+        s.ID,
+        s.STATUS,
+        s.SENSOR_NO,
+        t.MANUFACTURER,
+        t.MODEL,
+        t.EQUIPMENT_TYPE,
+        s.CHANNEL_ID,
+        b.`FACILITY_TYPE`,
+        b.`HYDRANT_NAME`
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_hardware_facilities b ON s.HYDRANT_ID = b.ID
+        WHERE  s.DEL_FLAG='0'
+        <if test="ids != null">
+            AND s.HYDRANT_ID in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="deviceSensor.manufacturer != null and deviceSensor.manufacturer != '' and deviceSensor.manufacturer != '全部'">
+            AND t.`MANUFACTURER` = #{deviceSensor.manufacturer}
+        </if>
+        <if test="deviceSensor.model != null and deviceSensor.model != ''">
+            AND t.`MODEL` = #{deviceSensor.model}
+        </if>
+        <if test="deviceSensor.equipmentType != null and deviceSensor.equipmentType != '' and deviceSensor.equipmentType != '全部'">
+            AND t.`EQUIPMENT_TYPE` = #{deviceSensor.equipmentType}
+        </if>
+        <if test="deviceSensor.sensorNo != null and deviceSensor.sensorNo != ''">
+            AND s.`SENSOR_NO` LIKE  '%${deviceSensor.sensorNo}%'
+        </if>
+        <if test="deviceSensor.status != null and deviceSensor.status != '' and deviceSensor.status != '-1'">
+            AND s.`STATUS` = #{deviceSensor.status}
+        </if>
+        <if test="deviceSensor.channelId != null  and deviceSensor.channelId >0">
+            AND s.`CHANNEL_ID` = #{deviceSensor.channelId}
+        </if>
+        <if test="facilityType != null and facilityType != '' and facilityType != '-1'">
+            AND b.`FACILITY_TYPE` = #{facilityType}
+        </if>
+        <if test="hydrantName != null  and hydrantName !=''">
+            AND b.`HYDRANT_NAME` = #{hydrantName}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="getByHydrantId" parameterType="integer" resultMap="deviceSensorMap">
+        SELECT * FROM `device_sensor` WHERE  DEL_FLAG = '0' and `STATUS` in(0,1,2)
+        <if test="hydrantId != null and hydrantId != ''">
+            AND `HYDRANT_ID` = #{hydrantId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+    </select>
+
+    <select id="selectByChannelIdAndStatusAndHydrant" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultType="Integer">
+        SELECT COUNT(ID) FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="hydrantId != null and hydrantId >0" >
+            AND HYDRANT_ID = #{hydrantId}
+        </if>
+        <if test="status != null and status != ''" >
+            AND STATUS = #{status}
+        </if>
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        AND trim(HYDRANT_ID) !=''
+    </select>
+
+    <select id="selectHardwareFacilitiesByChannelId" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="deviceSensorMap">
+        SELECT * FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''" >
+            AND CHANNEL_ID = #{_parameter}
+        </if>
+        AND trim(HYDRANT_ID) !=''
+    </select>
+
+    <!-- 获取所有室外传感器的厂商-->
+    <select id="getOutdoorManufacturer" resultType="String" >
+        SELECT DISTINCT b.`MANUFACTURER` FROM `device_sensor` a,`device_sensor_type` b WHERE a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id AND trim(a.HYDRANT_ID) !=''
+    </select>
+
+    <!-- 获取所有室外传感器的类型-->
+    <select id="getOutdoorEquipmentType" resultType="String" >
+        SELECT DISTINCT b.`EQUIPMENT_TYPE` FROM `device_sensor` a,`device_sensor_type` b WHERE  a. DEL_FLAG = '0' AND a.`SENSOR_TYPE_ID`=b.id  AND trim(a.HYDRANT_ID) !=''
+    </select>
+
+    <select id="getById" parameterType="java.lang.Long" resultMap="deviceSensorMap">
+        SELECT * FROM `device_sensor` WHERE  DEL_FLAG = '0' AND ID= #{id}
+    </select>
+
+    <!-- 传感器系列删除前查询1.5-->
+    <select id="deleteSensorTypeQuery" parameterType="Integer" resultType="String">
+        SELECT DISTINCT TENANT_ID FROM `device_sensor` WHERE DEL_FLAG = '0' AND SENSOR_TYPE_ID = #{id}
+    </select>
+
+    <!-- 测点删除前查询1.5-->
+    <select id="deleteMPQuery" parameterType="Integer" resultType="String">
+          SELECT DISTINCT TENANT_ID FROM `device_sensor` WHERE DEL_FLAG = '0' AND SENSOR_TYPE_ID IN (SELECT SENSOR_TYPE_ID FROM `device_sensor_series` WHERE ID IN ( SELECT SENSOR_SERIES_ID FROM `device_sensor_mp_relation` WHERE MP_ID =#{id}))
+    </select>
+
+
+
+    <select id="selectHardwareFacilitiesStatusCount" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultType="java.lang.Integer">
+        SELECT COUNT(ID) FROM device_sensor WHERE DEL_FLAG = '0'
+        <if test="hydrantId != null and hydrantId != ''" >
+            AND HYDRANT_ID = #{hydrantId}
+        </if>
+        <if test="status != null and status != ''" >
+            AND STATUS = #{status}
+        </if>
+        AND trim(HYDRANT_ID) !=''
+    </select>
+
+    <select id="getNotEnabledSensorList" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="queryMap">
+        SELECT
+        s.ID,
+        s.SENSOR_NO,
+        t.EQUIPMENT_TYPE,
+        t.MODEL,
+        t.MANUFACTURER,
+        s.CHANNEL_ID,
+        b.B_NAME,
+        s.FLOOR,
+        s.POSITION_DESCRIPTION,
+        s.POSITION_SIGN
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE s.DEL_FLAG = '0'
+        <if test="buildingId != null and buildingId != ''">
+            AND s.`BUILDING_ID` = #{buildingId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND s.`FLOOR` = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="getUnlabeledSensorList" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="queryMap">
+        SELECT
+        s.ID,
+        s.SENSOR_NO,
+        t.EQUIPMENT_TYPE,
+        t.MODEL,
+        t.MANUFACTURER,
+        s.CHANNEL_ID,
+        b.B_NAME,
+        s.FLOOR,
+        s.POSITION_DESCRIPTION
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE s.DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND s.`FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND s.`BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.`CHANNEL_ID` = #{channelId}
+        </if>
+        AND trim(s.POSITION_SIGN) = ''
+    </select>
+
+    <!-- 根据id判断传感器是否已经被删除-->
+    <select id="queryIdIsDel" resultType="Integer">
+       SELECT COUNT(id) FROM `device_sensor` WHERE id=#{_parameter} AND DEL_FLAG = '0'
+    </select>
+
+    <!-- 设备列表，分页查询 不查 未启用的传感器-->
+    <select id="selectByHydrantIdGetSensor"  resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor">
+        SELECT
+        s.ID,
+        s.STATUS,
+        s.SENSOR_NO,
+        t.EQUIPMENT_TYPE,
+        s.CHANNEL_ID,
+        b.POSITION_DESCRIPTION,
+        b.HYDRANT_NAME
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_hardware_facilities b ON s.HYDRANT_ID = b.ID
+        WHERE `STATUS` !='3' AND s.DEL_FLAG = '0'
+        <if test="hydrantId != null ">
+            AND s.`HYDRANT_ID` = #{hydrantId}
+        </if>
+        <if test="channelId != null  and channelId >0">
+            AND  s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null  and status !='' and status !='-1'">
+            AND `STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="getNotEnabledSensorListByHydrantId" parameterType="cn.turing.firecontrol.device.entity.DeviceSensor" resultMap="queryMap">
+        SELECT
+        s.ID,
+        s.SENSOR_NO,
+        t.EQUIPMENT_TYPE,
+        t.MODEL,
+        t.MANUFACTURER,
+        s.CHANNEL_ID,
+        b.HYDRANT_NAME,
+        b.POSITION_DESCRIPTION
+        FROM
+        device_sensor s
+        LEFT JOIN device_sensor_type t ON s.SENSOR_TYPE_ID = t.ID
+        LEFT JOIN device_hardware_facilities b ON s.HYDRANT_ID = b.ID
+        WHERE s.DEL_FLAG = '0'
+        <if test="hydrantId != null and hydrantId != ''">
+            AND s.`HYDRANT_ID` = #{hydrantId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="getCountByStatus" resultType="cn.turing.firecontrol.device.vo.CountVo">
+        SELECT
+        count(CASE `STATUS`='0' WHEN 1 THEN 0 END) AS faultCount,
+        count(CASE `STATUS`='1' WHEN 1 THEN 0 END ) AS callCount,
+        count(CASE `STATUS`='2' WHEN 1 THEN 0 END ) AS normalCount,
+        count(CASE `STATUS`='4' WHEN 1 THEN 0 END ) AS offCount
+        FROM device_sensor WHERE DEL_FLAG='0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+    </select>
+
+    <select id="getStatusCount" parameterType="integer" resultType="integer">
+        SELECT COUNT(ID) FROM `device_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        AND STATUS !='3'
+    </select>
+
+    <select id="queryByIds" resultType="java.util.Map">
+        SELECT
+        ds.id id,ds.SENSOR_NO sensorNo,dsy.MANUFACTURER manufacturer,dsy.EQUIPMENT_TYPE equipmentType,dsy.MODEL model,
+        ds.FLOOR foor,b.B_NAME buildingName,ds.POSITION_DESCRIPTION positionDescription
+        <if test="channelId != null and channelId == 7">
+            ,dfd.DOOR_NAME doorName
+        </if>
+        FROM device_sensor ds
+        JOIN device_sensor_type dsy ON ds.SENSOR_TYPE_ID = dsy.ID
+        LEFT JOIN device_building b ON ds.BUILDING_ID = b.ID
+        <if test="channelId != null and channelId == 7">
+            JOIN device_sensor_fd_ext  dsfe ON ds.id = dsfe.id
+            JOIN device_fire_door dfd ON dsfe.FIRE_DOOR_ID = dfd.ID
+        </if>
+        WHERE ds.DEL_FLAG = '0'
+            AND dsy.DEL_FLAG = '0'
+        <if test="ids != null">
+            AND ds.id IN
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="manufacturer != null and manufacturer != ''">
+            AND dsy.MANUFACTURER = #{manufacturer}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND dsy.EQUIPMENT_TYPE = #{equipmentType}
+        </if>
+        <if test="model != null and model != ''">
+            AND dsy.MODEL = #{model}
+        </if>
+        <if test="sensorNo != null and sensorNo != ''">
+            AND ds.SENSOR_NO = #{sensorNo}
+        </if>
+        <if test="buildingId != null">
+            AND ds.BUILDING_ID = #{buildingId}
+        </if>
+        <if test="excludeIds != null">
+            AND ds.id NOT IN
+            <foreach collection="excludeIds" item="exId" index="index" open="(" close=")" separator=",">
+                #{exId}
+            </foreach>
+        </if>
+        <if test="channelId != null">
+            AND ds.CHANNEL_ID = #{channelId}
+        </if>
+        <if test="code != null and code !=''">
+            AND b.ZXQY like '${code}'
+        </if>
+    </select>
+
+    <select id="queryOutdoorSensorByIds" resultType="java.util.Map">
+        SELECT
+        ds.id id,ds.SENSOR_NO sensorNo,dsy.MANUFACTURER manufacturer,dsy.EQUIPMENT_TYPE equipmentType,dsy.MODEL model,
+        b.HYDRANT_NAME facilityName
+        FROM device_sensor ds
+        JOIN device_sensor_type dsy ON ds.SENSOR_TYPE_ID = dsy.ID
+        LEFT JOIN device_hardware_facilities b ON ds.HYDRANT_ID = b.ID
+        WHERE ds.DEL_FLAG = '0'
+        AND dsy.DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND dsy.MANUFACTURER = #{manufacturer}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND dsy.EQUIPMENT_TYPE = #{equipmentType}
+        </if>
+        <if test="model != null and model != ''">
+            AND dsy.MODEL = #{model}
+        </if>
+        <if test="sensorNo != null and sensorNo != ''">
+            AND ds.SENSOR_NO = #{sensorNo}
+        </if>
+        <if test="excludeIds != null">
+            AND ds.id NOT IN
+            <foreach collection="excludeIds" item="exId" index="index" open="(" close=")" separator=",">
+                ${exId}
+            </foreach>
+        </if>
+        <if test="channelId != null">
+            AND ds.CHANNEL_ID = #{channelId}
+        </if>
+        <if test="hids != null">
+            AND ds.HYDRANT_ID IN
+            <foreach collection="hids" item="hId" index="index" open="(" close=")" separator=",">
+                ${hId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryNestedSensorByIds" resultType="java.util.Map">
+        SELECT
+        ds.id id,ds.SENSOR_NO sensorNo,dsy.MANUFACTURER manufacturer,dsy.EQUIPMENT_TYPE equipmentType,dsy.MODEL model,
+        e.DEVICE_VIDEO_NAME deviceName
+        FROM device_sensor ds
+        JOIN device_sensor_type dsy ON ds.SENSOR_TYPE_ID = dsy.ID
+        JOIN device_video_ext e ON ds.ID = e.ID
+        JOIN device_video_group g ON e.DEVICE_GROUP_ID = g.ID
+        WHERE ds.DEL_FLAG = '0'
+            AND dsy.DEL_FLAG = '0'
+            AND g.DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND dsy.MANUFACTURER = #{manufacturer}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND dsy.EQUIPMENT_TYPE = #{equipmentType}
+        </if>
+        <if test="model != null and model != ''">
+            AND dsy.MODEL = #{model}
+        </if>
+        <if test="sensorNo != null and sensorNo != ''">
+            AND ds.SENSOR_NO = #{sensorNo}
+        </if>
+        <if test="excludeIds != null">
+            AND ds.id NOT IN
+            <foreach collection="excludeIds" item="exId" index="index" open="(" close=")" separator=",">
+                ${exId}
+            </foreach>
+        </if>
+        <if test="channelId != null">
+            AND ds.CHANNEL_ID = #{channelId}
+        </if>
+        <if test="groupId != null">
+            AND g.ID = #{groupId}
+        </if>
+    </select>
+
+    <select id="queryByBuildings" resultMap="deviceSensorMap">
+        select ds.*,dst.EQUIPMENT_TYPE  from device_sensor ds
+        join device_sensor_type dst on ds.SENSOR_TYPE_ID = dst.ID
+        where ds.DEL_FLAG = '0' and  BUILDING_ID in
+        <foreach collection="buildingIds" separator="," open="(" close=")" item="buildingId">
+            #{buildingId}
+        </foreach>
+    </select>
+
+
+    <insert id="saveSensorWithKeyReturn" keyProperty="id" useGeneratedKeys="true"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceSensor">
+         INSERT INTO device_sensor(
+        BUILDING_ID,
+        CHANNEL_ID,
+        SENSOR_TYPE_ID,
+        CD_ID,
+        FIELD_STATUS,
+        `STATUS`,
+        SENSOR_NO,
+        FLOOR,
+        POSITION_DESCRIPTION,
+        POSITION_SIGN,
+        DEL_FLAG,
+        CRT_USER_NAME,
+        CRT_USER_ID,
+        CRT_TIME,
+        UPD_USER_NAME,
+        UPD_USER_ID,
+        UPD_TIME,
+        DEPART_ID,
+        TENANT_ID
+        )VALUES(
+           #{buildingId},
+           #{channelId},
+           #{sensorTypeId},
+           #{cdId,jdbcType=INTEGER},
+           #{fieldStatus,jdbcType=CHAR},
+           #{status,jdbcType=CHAR},
+           #{sensorNo,jdbcType=VARCHAR},
+           #{floor,jdbcType=INTEGER},
+           #{positionDescription,jdbcType=VARCHAR},
+           #{positionSign,jdbcType=VARCHAR},
+           #{delFlag,jdbcType=CHAR},
+           #{crtUserName,jdbcType=VARCHAR},
+           #{crtUserId,jdbcType=VARCHAR},
+           #{crtTime,jdbcType=TIMESTAMP},
+           #{updUserName,jdbcType=VARCHAR},
+           #{updUserId,jdbcType=VARCHAR},
+           #{updTime,jdbcType=TIMESTAMP},
+           #{departId,jdbcType=VARCHAR},
+           #{tenantId,jdbcType=VARCHAR}
+        )
+    </insert>
+
+
+    <update id="updateOfflineStatus">
+        update device_sensor set STATUS_TIME = #{time},STATUS =
+        <choose>
+            <when test="isOffline != null and isOffline.toString() == 'true'">'4' </when>
+            <otherwise>'2' </otherwise>
+        </choose>
+        where SENSOR_NO in
+        <foreach collection="sensorNos" item="sensorNo" open="(" close=")" separator=",">
+            #{sensorNo}
+        </foreach>
+        <if test="isOffline == null or isOffline.toString() == 'false'">
+            and (STATUS = '3' or STATUS = '4')
+        </if>
+    </update>
+
+    <select id="selectAllStatus" resultType="map">
+        select ID id,CHANNEL_ID channelId,`STATUS` status from device_sensor
+        where DEL_FLAG = '0'
+        <if test="channelId != null">
+            and CHANNEL_ID = #{channelId}
+        </if>
+    </select>
+
+    <select id="selectMeasuringPointById" resultType="cn.turing.firecontrol.device.entity.DeviceMeasuringPoint">
+        select dmp.MEASURING_POINT measuringPoint, dmp.CODE_NAME codeName, dmp.DATA_UNIT dataUnit  from device_sensor ds
+        join device_sensor_type dst on ds.SENSOR_TYPE_ID = dst.ID
+        join device_sensor_series dss on dst.ID = dss.SENSOR_TYPE_ID
+        join device_sensor_mp_relation dsmr on dsmr.SENSOR_SERIES_ID = dss.id
+        join device_measuring_point dmp on dmp.id = dsmr.MP_ID
+        where ds.id = #{id}
+    </select>
+    <select id="getSensorTypeStatus" resultType="cn.turing.firecontrol.device.dto.SensorTypeStatus" >
+    SELECT a.STATUS, b.EQUIPMENT_TYPE,count(a.`STATUS`) as num from device_sensor a LEFT JOIN device_sensor_type b on a.SENSOR_TYPE_ID=b.id where a.DEL_FLAG='0'
+    and b.EQUIPMENT_TYPE is not null
+        <if test="channelId != null">
+            AND a.CHANNEL_ID= #{channelId}
+        </if>
+    GROUP BY b.EQUIPMENT_TYPE,a.`STATUS`
+    </select>
+    <select id="getSensorStatusNum" resultType="cn.turing.firecontrol.device.dto.SensorTypeStatus">
+     SELECT STATUS ,count(1) as num from device_sensor where DEL_FLAG='0'  GROUP BY `STATUS`
+    </select>
+
+    <select id="getChannelSensorStatusNum" resultType="cn.turing.firecontrol.device.dto.SensorTypeStatus">
+    SELECT CHANNEL_ID,STATUS ,count(1) as num from device_sensor where DEL_FLAG='0'  GROUP BY CHANNEL_ID,`STATUS`
+    </select>
+    <select id="getAllStatusById" parameterType="map" resultType="String">
+     SELECT `STATUS` from device_sensor where DEL_FLAG='0'
+        <if test="buildingId != null">
+            AND BUILDING_ID=#{buildingId}
+        </if>
+        <if test="hydrantId != null">
+            AND HYDRANT_ID=#{hydrantId}
+        </if>
+    </select>
+
+</mapper>

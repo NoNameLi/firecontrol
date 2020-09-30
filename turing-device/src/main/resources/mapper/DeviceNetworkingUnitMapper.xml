@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceNetworkingUnitMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceNetworkingUnit" id="deviceNetworkingUnitMap">
+        <result property="id" column="ID"/>
+        <result property="oid" column="OID"/>
+        <result property="oName" column="O_NAME"/>
+        <result property="oLicense" column="O_LICENSE"/>
+        <result property="oLicenseTime" column="O_LICENSE_TIME"/>
+        <result property="oAddress" column="O_ADDRESS"/>
+        <result property="xzqy" column="XZQY"/>
+        <result property="street" column="STREET"/>
+        <result property="road" column="ROAD"/>
+        <result property="mnph" column="MNPH"/>
+        <result property="ldz" column="LDZ"/>
+        <result property="addressDetail" column="ADDRESS_DETAIL"/>
+        <result property="gis" column="GIS"/>
+        <result property="oPhone" column="O_PHONE"/>
+        <result property="safeDutyName" column="SAFE_DUTY_NAME"/>
+        <result property="safeDutyPhone" column="SAFE_DUTY_PHONE"/>
+        <result property="safeDutyIdcard" column="SAFE_DUTY_IDCARD"/>
+        <result property="legalName" column="LEGAL_NAME"/>
+        <result property="legalPhone" column="LEGAL_PHONE"/>
+        <result property="legalIdcard" column="LEGAL_IDCARD"/>
+        <result property="safeManagerName" column="SAFE_MANAGER_NAME"/>
+        <result property="safeManagerPhone" column="SAFE_MANAGER_PHONE"/>
+        <result property="safeManagerIdcard" column="SAFE_MANAGER_IDCARD"/>
+        <result property="oLinkman" column="O_LINKMAN"/>
+        <result property="oLinkphone" column="O_LINKPHONE"/>
+        <result property="oType" column="O_TYPE"/>
+        <result property="oNature" column="O_NATURE"/>
+        <result property="oClass" column="O_CLASS"/>
+        <result property="keyunitTime" column="KEYUNIT_TIME"/>
+        <result property="isKeyunit" column="IS_KEYUNIT"/>
+        <result property="oOther" column="O_OTHER"/>
+        <result property="changetime" column="CHANGETIME"/>
+        <result property="createtime" column="CREATETIME"/>
+        <result property="changeacc" column="CHANGEACC"/>
+        <result property="createacc" column="CREATEACC"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <!--   搜索单位名称-->
+    <select id="selectPageList"  resultMap="deviceNetworkingUnitMap" parameterType="cn.turing.firecontrol.device.entity.DeviceNetworkingUnit">
+        SELECT id,O_NAME FROM `device_networking_unit`  WHERE DEL_FLAG = '0'
+        <if test="oName != null and oName != ''">
+            AND `O_NAME` like '%${oName}%'
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!-- 查看建筑名称是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceNetworkingUnit" resultType="Integer">
+        SELECT COUNT(*) FROM `device_networking_unit` WHERE DEL_FLAG = '0'
+        <if test="oName != null and oName != ''">
+            AND `O_NAME`=#{oName}
+        </if>
+    </select>
+
+    <select id="getById" parameterType="Integer" resultMap="deviceNetworkingUnitMap">
+        SELECT * FROM `device_networking_unit` WHERE DEL_FLAG = '0' AND ID=#{_parameter}
+    </select>
+
+    <select id="getAllUnit"  resultMap="deviceNetworkingUnitMap">
+        SELECT ID,O_NAME FROM `device_networking_unit` WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''">
+            AND `O_NAME` =#{_parameter}
+        </if>
+    </select>
+
+
+
+</mapper>

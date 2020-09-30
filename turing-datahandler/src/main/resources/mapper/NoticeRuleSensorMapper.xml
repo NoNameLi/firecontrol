@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.datahandler.mapper.NoticeRuleSensorMapper" >
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.datahandler.entity.NoticeRuleSensor" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="NOTICE_RULE_ID" property="noticeRuleId" jdbcType="BIGINT" />
+    <result column="SENSOR_ID" property="sensorId" jdbcType="BIGINT" />
+    <result column="CHANNEL_ID" property="channelId" jdbcType="BIGINT" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <update id="deleteByIds" >
+     UPDATE notice_rule_sensor
+       SET DEL_FLAG = '1'
+     WHERE SENSOR_ID IN (${sensorIds})
+       AND NOTICE_RULE_ID = #{noticeRuleId}
+  </update>
+
+  <select id="queryBySensorIdAndChannelId" resultMap="BaseResultMap">
+    SELECT * FROM notice_rule_sensor
+    WHERE DEL_FLAG = 0
+       AND SENSOR_ID = #{sensorId}
+       AND CHANNEL_ID = #{channelId}
+    LIMIT 0,1
+  </select>
+
+  <update id="deleteByNoticeRuleId">
+    UPDATE notice_rule_sensor
+       SET DEL_FLAG = '1'
+     WHERE NOTICE_RULE_ID = #{noticeRuleId}
+  </update>
+</mapper>

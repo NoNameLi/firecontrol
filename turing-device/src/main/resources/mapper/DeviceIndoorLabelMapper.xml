@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceIndoorLabelMapper" >
+  <resultMap id="deviceIndoorLabelMap" type="cn.turing.firecontrol.device.entity.DeviceIndoorLabel" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="FACILITIES_TYPE_ID" property="facilitiesTypeId" jdbcType="INTEGER" />
+    <result column="BUILDING_ID" property="buildingId" jdbcType="INTEGER" />
+    <result column="FACILITIES_NO" property="facilitiesNo" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="CHAR" />
+    <result column="FLOOR" property="floor" jdbcType="INTEGER" />
+    <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+    <result column="LAST_INSPECTION_TIME" property="lastInspectionTime" jdbcType="TIMESTAMP" />
+    <result column="QR_CODE_PATH" property="qrCodePath" jdbcType="VARCHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+    <result column="USE_FLAG" property="useFlag" jdbcType="CHAR" />
+    <result column="USE_TEST_FLAG" property="useTestFlag" jdbcType="CHAR" />
+    <result column="RESULT_FLAG" property="resultFlag" jdbcType="CHAR" />
+  </resultMap>
+
+  <resultMap type="Map" id="queryMap">
+    <!--column指向数据库列名 property指向pojo对象中字段名 -->
+    <result property="id" column="ID"/>
+    <result column="EQUIPMENT_TYPE" property="equipmentType" />
+    <result column="FACILITIES_NO" property="facilitiesNo" />
+    <result column="STATUS" property="status" />
+      <result column="BUILDING_ID" property="buildingId"/>
+    <result column="FLOOR" property="floor" />
+    <result column="POSITION_DESCRIPTION" property="positionDescription" />
+    <result column="LAST_INSPECTION_TIME"  property="lastInspectionTime"  />
+    <result column="QR_CODE_PATH"  property="qrCodePath"  />
+    <result column="BUILDING_ID" property="buildingId"/>
+    <result column="B_NAME" property="bName"/>
+      <result column="RESULT_FLAG" property="resultFlag"/>
+  </resultMap>
+
+  <select id="selectQuery" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel" resultMap="queryMap">
+    SELECT
+	a.ID,
+	FACILITIES_NO,
+	f.EQUIPMENT_TYPE,
+	STATUS,
+	FLOOR,
+	POSITION_DESCRIPTION,
+	LAST_INSPECTION_TIME,
+    QR_CODE_PATH,
+    a.BUILDING_ID,
+    b.B_NAME
+    FROM
+	device_indoor_label a
+    JOIN device_facilities_type f ON a.FACILITIES_TYPE_ID = f.ID
+    JOIN device_building b ON a.BUILDING_ID = b.ID
+    WHERE a.DEL_FLAG='0' AND f.DEL_FLAG='0'
+    <if test="ids != null  ">
+      AND a.BUILDING_ID in
+      <foreach collection="ids" item="id" open="(" close=")" separator=",">
+        #{id}
+      </foreach>
+    </if>
+    <if test="deviceIndoorLabel.status != null and deviceIndoorLabel.status != '' and deviceIndoorLabel.status != '全部'">
+      AND `STATUS` = #{deviceIndoorLabel.status}
+    </if>
+    <if test="deviceIndoorLabel.facilitiesNo != null and deviceIndoorLabel.facilitiesNo != ''">
+      AND `FACILITIES_NO` LIKE '%${deviceIndoorLabel.facilitiesNo}%'
+    </if>
+    <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+      AND f.`EQUIPMENT_TYPE` = #{equipmentType}
+    </if>
+    <if test="deviceIndoorLabel.floor != null and deviceIndoorLabel.floor != ''">
+      AND `FLOOR` = #{deviceIndoorLabel.floor}
+    </if>
+    <if test="deviceIndoorLabel.positionDescription != null and deviceIndoorLabel.positionDescription != ''">
+      AND `POSITION_DESCRIPTION` = #{deviceIndoorLabel.positionDescription}
+    </if>
+    <if test="startDate != null and endDate != null">
+      AND LAST_INSPECTION_TIME &gt;= #{startDate} AND LAST_INSPECTION_TIME &lt;= #{endDate}
+    </if>
+    <if test="deviceIndoorLabel.useFlag != null and deviceIndoorLabel.useFlag != ''">
+      AND `USE_FLAG` = #{deviceIndoorLabel.useFlag}
+    </if>
+    <if test="deviceIndoorLabel.useTestFlag != null and deviceIndoorLabel.useTestFlag != ''">
+      AND `USE_TEST_FLAG` = #{deviceIndoorLabel.useTestFlag}
+    </if>
+    order by a.CRT_TIME DESC
+  </select>
+
+    <!-- 批量假删除-->
+    <update id="updateBatch" parameterType="String">
+        UPDATE `device_indoor_label` SET DEL_FLAG='1' WHERE id IN(${_parameter })
+    </update>
+
+  <select id="getListById" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel" resultMap="queryMap">
+    SELECT
+    b.B_NAME,
+    FACILITIES_NO,
+    f.EQUIPMENT_TYPE,
+    FLOOR,
+    POSITION_DESCRIPTION,
+    QR_CODE_PATH
+    FROM
+    device_indoor_label a
+    JOIN device_facilities_type f ON a.FACILITIES_TYPE_ID = f.ID
+    JOIN device_building b ON a.BUILDING_ID = b.ID
+    WHERE a.DEL_FLAG='0'
+    <if test="ids != null  ">
+      AND a.ID in
+      <foreach collection="ids" item="id" open="(" close=")" separator=",">
+        #{id}
+      </foreach>
+    </if>
+  </select>
+      <!--删除 设施类型判断有多少子站使用此标签 -->
+      <select id="deleteFacilitiesTypeQuery" parameterType="Integer" resultType="String">
+           SELECT DISTINCT TENANT_ID FROM `device_indoor_label` WHERE DEL_FLAG='0' AND FACILITIES_TYPE_ID=#{id}
+      </select>
+
+      <!-- 根据ids修改是否生成路线标记-->
+      <update id="updateByIds">
+          UPDATE `device_indoor_label` SET `USE_FLAG` = #{useFlag} WHERE id IN(${ids})
+      </update>
+    <!-- 根据ids修改是否生成路线标记-->
+    <update id="updateTestByIds">
+        UPDATE `device_indoor_label` SET `USE_TEST_FLAG` = #{useTestFlag} WHERE id IN(${ids})
+    </update>
+
+     <select id="getCount" resultType="Integer">
+           SELECT COUNT(ID) FROM `device_indoor_label` WHERE DEL_FLAG='0'
+           <if test="status != null and status != null">
+              AND `STATUS`=#{status}
+            </if>
+            <if test="resultFlag != null and resultFlag != null">
+             AND `RESULT_FLAG`=#{resultFlag}
+            </if>
+            <if test="useFlag != null and useFlag != null">
+              AND `USE_FLAG`=#{useFlag}
+            </if>
+     </select>
+
+     <select id="getCountByRoute" resultType="Integer" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+           SELECT COUNT(a.ID) FROM device_indoor_label a
+           JOIN device_route_label r WHERE a.ID = r.LABEL_ID
+           <if test="status != null and status != null">
+             AND a.`STATUS`=#{status}
+            </if>
+           AND r.LABEL_FLAG='0' AND a.DEL_FLAG='0'AND  r.DEL_FLAG='0'
+     </select>
+
+  <select id="selectIndoorLabelList" resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+       SELECT
+          l.ID,
+	      f.EQUIPMENT_TYPE,
+          l.FACILITIES_NO,
+          l.BUILDING_ID,
+	      b.B_NAME,
+	      l.FLOOR,
+	      l.POSITION_DESCRIPTION,
+	      l.LAST_INSPECTION_TIME,
+          l.STATUS,
+          l.RESULT_FLAG
+        FROM device_indoor_label l
+        JOIN device_building b ON l.BUILDING_ID = b.ID
+        JOIN device_facilities_type f ON l.FACILITIES_TYPE_ID = f.ID
+        AND l.DEL_FLAG='0'
+        <if test="status != null and status !=''">
+           AND l.`STATUS`=#{status}
+        </if>
+        <if test="zxqy != null and zxqy != ''">
+           AND b.ZXQY LIKE #{zxqy}
+        </if>
+        <if test="useFlag != null and useFlag !=''">
+           AND l.`USE_FLAG`=#{useFlag}
+        </if>
+        order by l.CRT_TIME DESC
+  </select>
+
+    <select id="selectBuildingList" resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+        SELECT
+        b.ID,
+        b.B_NAME
+        FROM device_route_label r
+        JOIN device_indoor_label l ON r.LABEL_ID = l.ID
+        JOIN device_building b ON l.BUILDING_ID = b.ID
+        WHERE r.DEL_FLAG='0' AND r.ROUTE_FLAG='0'
+        <if test="routeId != null and routeId !=''">
+            AND r.`ROUTE_ID`=#{routeId}
+        </if>
+    </select>
+
+    <select id="getBuildingId" resultType="Integer" >
+        SELECT  b.`BUILDING_ID` FROM `device_route_label` a,`device_indoor_label` b WHERE a.`LABEL_ID` = b.`ID` AND a.DEL_FLAG = '0' AND b.DEL_FLAG = '0'
+      <if test="useFlag != null and useFlag !=''">
+        AND b.`USE_FLAG` = #{useFlag}
+      </if>
+      <if test="useTestFlag != null and useTestFlag !=''">
+        AND b.`USE_TEST_FLAG` = #{useTestFlag}
+      </if>
+      <if test="ids != null and ids !=''">
+         AND b.ID IN (${ids})
+      </if>
+      <if test="routeFlag != null and routeFlag !=''">
+         AND a.ROUTE_FLAG =  #{routeFlag}
+      </if>
+        <if test="labelFlag != null and labelFlag !=''">
+            AND a.LABEL_FLAG = #{labelFlag}
+        </if>
+        ORDER BY a.`CRT_TIME` ASC
+    </select>
+
+    <select id="selectByBuildingId" resultMap="queryMap" parameterType="Integer">
+        SELECT
+        a.ID,
+        f.EQUIPMENT_TYPE,
+        FLOOR,
+        POSITION_DESCRIPTION
+        FROM
+        device_indoor_label a
+        JOIN device_facilities_type f ON a.FACILITIES_TYPE_ID = f.ID
+        JOIN device_building b ON a.BUILDING_ID = b.ID
+        WHERE a.DEL_FLAG='0' AND  f.DEL_FLAG='0'
+       <if test="useFlag != null and useFlag !=''">
+         AND a.`USE_FLAG` = #{useFlag}
+       </if>
+       <if test="useTestFlag != null and useTestFlag !=''">
+         AND a.`USE_TEST_FLAG` = #{useTestFlag}
+       </if>
+       <if test="buildingId != null">
+         AND a.BUILDING_ID=#{buildingId}
+       </if>
+       <if test="ids != null and ids !=''">
+         AND a.ID IN (${ids})
+       </if>
+       ORDER BY a.`FLOOR` ASC
+    </select>
+
+    <select id="selectByBuildingIdResultId" resultType="Integer" >
+      SELECT
+      ID
+      FROM
+      device_indoor_label
+      WHERE DEL_FLAG='0'
+      <if test="useFlag != null and useFlag !=''">
+        AND `USE_FLAG` = #{useFlag}
+      </if>
+      <if test="useTestFlag != null and useTestFlag !=''">
+        AND `USE_TEST_FLAG` = #{useTestFlag}
+      </if>
+      <if test="buildingId != null">
+        AND BUILDING_ID=#{buildingId}
+      </if>
+      <if test="ids != null and ids !=''">
+        AND ID IN (${ids})
+      </if>
+    </select>
+
+    <select id="selectIndoorLabelListByBuildingId" resultMap="queryMap" parameterType="Integer">
+        SELECT
+        a.ID,
+        f.EQUIPMENT_TYPE,
+        a.FACILITIES_NO,
+        a.BUILDING_ID,
+        FLOOR,
+        POSITION_DESCRIPTION,
+        STATUS
+        FROM
+        device_indoor_label a
+        JOIN device_facilities_type f ON a.FACILITIES_TYPE_ID = f.ID
+        JOIN device_building b ON a.BUILDING_ID = b.ID
+        WHERE a.DEL_FLAG='0' AND f.DEL_FLAG='0' AND a.`USE_FLAG` = '1'
+        <if test="buildingId != null">
+            AND a.BUILDING_ID=#{buildingId}
+        </if>
+        <if test="ids != null and ids !=''">
+            AND a.ID IN (${ids})
+        </if>
+        ORDER BY a.`FLOOR`
+    </select>
+
+    <select id="getIndoorLabelByFacilitiesNo" resultMap="deviceIndoorLabelMap" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+        SELECT * FROM device_indoor_label WHERE DEL_FLAG='0' AND `FACILITIES_NO` = #{_parameter}
+    </select>
+
+    <select id="getById" resultMap="deviceIndoorLabelMap" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+        SELECT * FROM device_indoor_label WHERE DEL_FLAG='0' AND `ID` = #{_parameter}
+    </select>
+
+    <update id="updateQrCodePath" parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorLabel">
+        UPDATE device_indoor_label SET QR_CODE_PATH = #{qrCodePath} WHERE ID = #{id}
+    </update>
+
+    <select id="getNeedInspectionCount" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_indoor_label` WHERE DEL_FLAG='0' AND
+        ID IN (
+        SELECT DISTINCT
+        LABEL_ID
+        FROM
+        device_route_label
+        WHERE
+        ROUTE_ID IN (
+        SELECT DISTINCT
+        INSPECTION_ROUTE_ID
+        FROM
+        device_inspection_tasks
+        WHERE
+        DEL_FLAG = '0'
+        )
+        AND DEL_FLAG = '0'
+        AND LABEL_FLAG = '0'
+        AND ROUTE_FLAG = '0'
+        )
+        <if test="status != null and status != null">
+            AND `STATUS`=#{status}
+        </if>
+        <if test="resultFlag != null and resultFlag != null">
+            AND `RESULT_FLAG`=#{resultFlag}
+        </if>
+        <if test="useFlag != null and useFlag != null">
+            AND `USE_FLAG`=#{useFlag}
+        </if>
+    </select>
+
+    <select id="getIdListBytask" resultType="Integer">
+        SELECT ID FROM `device_indoor_label` WHERE DEL_FLAG='0' AND
+        ID IN (
+        SELECT DISTINCT
+        LABEL_ID
+        FROM
+        device_route_label
+        WHERE
+        ROUTE_ID IN (
+        SELECT DISTINCT
+        INSPECTION_ROUTE_ID
+        FROM
+        device_inspection_tasks
+        WHERE
+        DEL_FLAG = '0'
+        )
+        AND DEL_FLAG = '0'
+        AND LABEL_FLAG = '0'
+        AND ROUTE_FLAG = '0'
+        )
+    </select>
+
+    <select id="selectIndoorLabelListById" resultMap="queryMap" parameterType="Integer">
+        SELECT
+        l.ID,
+        f.EQUIPMENT_TYPE,
+        l.FACILITIES_NO,
+        l.BUILDING_ID,
+        b.B_NAME,
+        l.FLOOR,
+        l.POSITION_DESCRIPTION,
+        l.LAST_INSPECTION_TIME,
+        l.STATUS
+        FROM device_indoor_label l
+        JOIN device_building b ON l.BUILDING_ID = b.ID
+        JOIN device_facilities_type f ON l.FACILITIES_TYPE_ID = f.ID
+        AND l.DEL_FLAG='0' AND l.RESULT_FLAG ='0'
+        <if test="ids != null and ids !=''">
+            AND l.ID IN (${ids})
+        </if>
+        <if test="zxqy != null and zxqy != ''">
+            AND b.ZXQY LIKE #{zxqy}
+        </if>
+    </select>
+
+    <select id="getInspectionInfoById" resultType="cn.turing.firecontrol.device.vo.LabelnspectionVO" >
+        SELECT a.POSITION_DESCRIPTION,a.RESULT_FLAG,a.LAST_INSPECTION_TIME,a.id as labelId ,b.LINKMAN,b.LINKPHONE ,d.ROUTE_NAME,d.id as routeId,e.EQUIPMENT_TYPE
+from device_indoor_label a
+ LEFT JOIN device_building b on a.BUILDING_ID=b.id
+LEFT JOIN device_route_label c on a.id=c.LABEL_ID
+LEFT JOIN device_inspection_route d on c.ROUTE_ID=d.ID
+LEFT JOIN device_facilities_type e on a.FACILITIES_TYPE_ID=e.ID where a.id=#{id} and c.LABEL_FLAG='0'
+    </select>
+
+    <select id="selectAllStatus" resultType="map">
+        select ID id,`STATUS` status from device_indoor_label where DEL_FLAG = '0'
+    </select>
+</mapper>

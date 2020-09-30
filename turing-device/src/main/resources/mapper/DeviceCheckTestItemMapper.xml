@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceCheckTestItemMapper" >
+      <resultMap id="deviceCheckTestItemMap" type="cn.turing.firecontrol.device.entity.DeviceCheckTestItem" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+            <id column="ID" property="id" jdbcType="INTEGER" />
+            <result column="FACILITIES_TYPE_ID" property="facilitiesTypeId" jdbcType="INTEGER" />
+            <result column="ITEM_FLAG" property="itemFlag" jdbcType="CHAR" />
+            <result column="CHECK_TEST_ITEM" property="checkTestItem" jdbcType="VARCHAR" />
+            <result column="FLAG" property="flag" jdbcType="CHAR" />
+            <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+            <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+            <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+            <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+            <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+            <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+            <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+            <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+            <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+      </resultMap>
+
+
+      <select id="selectByQuery" resultMap="deviceCheckTestItemMap">
+            SELECT `CHECK_TEST_ITEM` FROM `device_check_test_item` WHERE DEL_FLAG='0'
+        <if test="facilitiesTypeId != null and facilitiesTypeId != ''">
+             AND `FACILITIES_TYPE_ID` = #{facilitiesTypeId}
+        </if>
+        <if test="itemFlag != null and itemFlag != ''">
+          AND `ITEM_FLAG` = #{itemFlag}
+        </if>
+        <if test="flag != null and flag != ''">
+          AND `FLAG` = #{flag}
+        </if>
+      </select>
+
+    <select id="selectByFacilitiesNo" resultMap="deviceCheckTestItemMap">
+        SELECT ID,CHECK_TEST_ITEM,FLAG FROM `device_check_test_item` WHERE DEL_FLAG='0'
+        <if test="facilitiesTypeId != null and facilitiesTypeId != ''">
+            AND `FACILITIES_TYPE_ID` = #{facilitiesTypeId}
+        </if>
+        <if test="itemFlag != null and itemFlag != ''">
+            AND `ITEM_FLAG` = #{itemFlag}
+        </if>
+        <if test="flag != null and flag != ''">
+            AND `FLAG` = #{flag}
+        </if>
+    </select>
+</mapper>

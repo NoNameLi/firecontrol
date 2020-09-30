@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceInspectionTimeMapper" >
+  <resultMap id="deviceInspectionTimeMap" type="cn.turing.firecontrol.device.entity.DeviceInspectionTime" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="INSPECTION_SCHEME_ID" property="inspectionSchemeId" jdbcType="INTEGER" />
+    <result column="INSPECTION_TIME" property="inspectionTime" jdbcType="VARCHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="selectBySchemeId" resultMap="deviceInspectionTimeMap" parameterType="cn.turing.firecontrol.device.entity.DeviceInspectionTime">
+    SELECT * FROM device_inspection_time where DEL_FLAG='0' AND INSPECTION_SCHEME_ID=#{id}
+    <if test="tenantId !=null and tenantId != ''">
+      AND TENANT_ID=#{tenantId}
+    </if>
+  </select>
+</mapper>

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceFireMainSensorMapper" >
+      <resultMap id="deviceFireMainSensorMap" type="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" >
+
+          <id column="ID" property="id" jdbcType="BIGINT" />
+          <result column="BUILDING_ID" property="buildingId" jdbcType="INTEGER" />
+          <result column="FIRE_MAIN_ID" property="fireMainId" jdbcType="INTEGER" />
+          <result column="CHANNEL_ID" property="channelId" jdbcType="INTEGER" />
+          <result column="SERIES" property="series" jdbcType="VARCHAR" />
+          <result column="SENSOR_LOOP" property="sensorLoop" jdbcType="VARCHAR" />
+          <result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+          <result column="STATUS" property="status" jdbcType="CHAR" />
+          <result column="FLOOR" property="floor" jdbcType="INTEGER" />
+          <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+          <result column="POSITION_SIGN" property="positionSign" jdbcType="VARCHAR" />
+          <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+          <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+          <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+          <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+          <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+          <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+          <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+          <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+          <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+          <result column="STATUS_TIME" property="statusTime" jdbcType="TIMESTAMP" />
+      </resultMap>
+
+
+    <resultMap id="queryMap" type="Map" >
+        <id column="ID" property="id" jdbcType="BIGINT" />
+        <result column="B_NAME" property="bName" jdbcType="INTEGER" />
+        <result column="FIRE_MAIN_ID" property="fireMainId" jdbcType="INTEGER" />
+        <result column="SERIES" property="series" jdbcType="VARCHAR" />
+        <result column="SENSOR_LOOP" property="sensorLoop" jdbcType="VARCHAR" />
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+        <result column="STATUS" property="status" jdbcType="CHAR" />
+        <result column="FLOOR" property="floor" jdbcType="INTEGER" />
+        <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+        <result column="POSITION_SIGN" property="positionSign" jdbcType="VARCHAR" />
+        <result column="CHANNEL_ID" property="channelId" jdbcType="INTEGER" />
+        <result column="BUILDING_ID"  property="buildingId"  />
+    </resultMap>
+
+    <!-- 分页查询  根据条件搜索-->
+    <select id="selectQuery"  resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor">
+        SELECT
+        s.`ID`,
+        s.`STATUS`,
+        s.`SENSOR_LOOP`,
+        s.`ADDRESS`,
+        s.`SERIES`,
+        b.`B_NAME`,
+        s.`FLOOR`,
+        s.`POSITION_DESCRIPTION`,
+        s.`POSITION_SIGN`,
+        s.BUILDING_ID
+        FROM
+        `device_fire_main_sensor` s
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE s.DEL_FLAG='0'
+        <if test="ids != null  ">
+            AND s.BUILDING_ID in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="deviceFireMainSensor.status != null and deviceFireMainSensor.status != '' and deviceFireMainSensor.status != '-1'">
+            AND `STATUS` = #{deviceFireMainSensor.status}
+        </if>
+        <if test="deviceFireMainSensor.positionDescription != null and deviceFireMainSensor.positionDescription != ''">
+            AND `POSITION_DESCRIPTION` = #{deviceFireMainSensor.positionDescription}
+        </if>
+        <if test="deviceFireMainSensor.floor != null ">
+            AND `FLOOR` = #{deviceFireMainSensor.floor}
+        </if>
+        <if test="deviceFireMainSensor.fireMainId != null and deviceFireMainSensor.fireMainId>0">
+            AND `FIRE_MAIN_ID` = #{deviceFireMainSensor.fireMainId}
+        </if>
+        <if test="deviceFireMainSensor.series != null and deviceFireMainSensor.series!=''">
+            AND `SERIES` = #{deviceFireMainSensor.series}
+        </if>
+        <if test="deviceFireMainSensor.sensorLoop != null and deviceFireMainSensor.sensorLoop!=''">
+            AND `SENSOR_LOOP` = #{deviceFireMainSensor.sensorLoop}
+        </if>
+        <if test="deviceFireMainSensor.address != null and deviceFireMainSensor.address!=''">
+            AND `ADDRESS` = #{deviceFireMainSensor.address}
+        </if>
+        <if test="deviceFireMainSensor.positionSign == '0'.toString()">
+            AND (`POSITION_SIGN` = '' or `POSITION_SIGN` is NULL )
+        </if>
+        <if test="deviceFireMainSensor.positionSign == '1'.toString()">
+            AND `POSITION_SIGN` != ''
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+      <!-- 根据消防主机id查看绑定的传感器的个数-->
+      <select id="selectByFireMainIdCount"  resultType="Integer" parameterType="Integer">
+        SELECT  COUNT (`ID`) FROM `device_fire_main_sensor`  WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter >0">
+          AND `FIRE_MAIN_ID` = #{_parameter}
+        </if>
+      </select>
+
+    <!-- 根据消防主机id查看绑定的传感器信息-->
+    <select id="selectByFireMainId"  resultMap="deviceFireMainSensorMap" parameterType="Integer">
+        SELECT  * FROM `device_fire_main_sensor`  WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter >0">
+            AND `FIRE_MAIN_ID` = #{_parameter}
+        </if>
+    </select>
+
+    <!-- 根据建筑id查询绑定的传感器信息-->
+    <select id="selectByBuildingIdQuery"  resultMap="deviceFireMainSensorMap" parameterType="Integer">
+        SELECT  * FROM `device_fire_main_sensor`  WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter >0">
+            AND `BUILDING_ID` = #{_parameter}
+        </if>
+    </select>
+
+
+
+      <!-- 根据ip+端口+回路+地址查询传感器的信息-->
+      <select id="selectIgnoreTenantIpAndPortAndSensor" resultMap="deviceFireMainSensorMap">
+          SELECT * FROM `device_fire_main_sensor` WHERE DEL_FLAG = '0' AND `FIRE_MAIN_ID` = ( SELECT ID FROM `device_fire_main` WHERE `SERVER_IP` = #{serverIp} AND `PORT` = #{port})
+          <if test="sensorLoop!=null and sensorLoop!=''">
+              AND `SENSOR_LOOP` = #{sensorLoop}
+          </if>
+          <if test="address!=null and address!=''">
+              AND `ADDRESS` = #{address}
+          </if>
+      </select>
+
+    <select id="selectByBuildingId" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultMap="deviceFireMainSensorMap">
+        SELECT * FROM `device_fire_main_sensor` WHERE DEL_FLAG = '0'
+        <if test="buildingId != null and buildingId != ''">
+            AND `BUILDING_ID` =#{buildingId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID`=#{channelId}
+        </if>
+    </select>
+
+    <select id="selectStatusCount" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM `device_fire_main_sensor` WHERE DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` =#{buildId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND `FLOOR`=#{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID`=#{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS`=#{status}
+        </if>
+    </select>
+
+    <select id="selectByChannelIdAndStatusAndBuilding" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultType="Integer">
+        SELECT COUNT(ID) FROM device_fire_main_sensor WHERE DEL_FLAG = '0'
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        <if test="buildingId != null and buildingId >0" >
+            AND BUILDING_ID = #{buildingId}
+        </if>
+        <if test="status != null and status != ''" >
+            AND STATUS = #{status}
+        </if>
+        <if test="tenantId != null and tenantId != ''" >
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 根据建筑id，楼层查询-->
+    <select id="getSensorStatusByBuildAndFloor" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultMap="deviceFireMainSensorMap">
+        SELECT * FROM device_fire_main_sensor WHERE DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''">
+            AND BUILDING_ID = #{buildId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND FLOOR = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND CHANNEL_ID = #{channelId}
+        </if>
+    </select>
+
+    <!-- 修改传感器的状态-->
+    <update id="updateSensorStatus" >
+        UPDATE `device_fire_main_sensor` SET `STATUS` = #{status} WHERE ID =#{id}
+    </update>
+
+    <select id="selectCountByType" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultType="java.lang.Integer">
+        SELECT COUNT(ID) FROM device_fire_main_sensor WHERE DEL_FLAG = '0'
+        <if test="series != null and series != ''">
+            AND SERIES = #{series}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND BUILDING_ID = #{buildId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND FLOOR = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND CHANNEL_ID = #{channelId}
+        </if>
+    </select>
+
+    <!-- 当主机一样时回路+地址判重-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultType="Integer">
+        SELECT COUNT(*) FROM `device_fire_main_sensor` WHERE DEL_FLAG = '0'
+        <if test="fireMainId != null and fireMainId >0">
+            AND `FIRE_MAIN_ID` =#{fireMainId}
+        </if>
+        <if test="sensorLoop != null and sensorLoop != ''">
+            AND `SENSOR_LOOP`=#{sensorLoop}
+        </if>
+        <if test="address != null and address != ''">
+            AND `ADDRESS` =#{address}
+        </if>
+    </select>
+
+    <!-- 假删除 根据消防主机的id  批量假删除-->
+    <update id="deleteByFireMain" parameterType="Integer">
+        UPDATE `device_fire_main_sensor` SET DEL_FLAG = '1' WHERE `FIRE_MAIN_ID` = #{_parameter}
+    </update>
+
+    <select id="getNotEnabledSensorList" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultMap="queryMap">
+        SELECT
+        s.ID,
+        s.FIRE_MAIN_ID,
+        s.SERIES,
+        s.SENSOR_LOOP,
+        s.ADDRESS,
+        s.CHANNEL_ID,
+        b.B_NAME,
+        s.FLOOR,
+        s.POSITION_DESCRIPTION,
+        s.POSITION_SIGN
+        FROM
+        device_fire_main_sensor s
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE s.DEL_FLAG = '0'
+        <if test="buildingId != null and buildingId != ''">
+            AND s.`BUILDING_ID` = #{buildingId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND s.`FLOOR` = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND s.`STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <!-- 设备列表，分页查询 不查 未启用的传感器-->
+    <select id="selectByFloorGetSensor"  resultMap="queryMap" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor">
+        SELECT
+        s.ID,
+        s.FIRE_MAIN_ID,
+        s.SENSOR_LOOP,
+        s.ADDRESS,
+        s.SERIES,
+        s.STATUS,
+        s.CHANNEL_ID,
+        s.POSITION_DESCRIPTION,
+        b.B_NAME
+        FROM
+        device_fire_main_sensor s
+        LEFT JOIN device_building b ON s.BUILDING_ID = b.ID
+        WHERE `STATUS` !='3' AND s.DEL_FLAG = '0'
+        <if test="floor != null ">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildingId != null ">
+            AND `BUILDING_ID` = #{buildingId}
+        </if>
+        <if test="channelId != null  and channelId >0">
+            AND  s.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null  and status !='' and status !='-1'">
+            AND `STATUS` = #{status}
+        </if>
+        order by s.CRT_TIME DESC
+    </select>
+
+    <select id="getCountByStatus" resultType="cn.turing.firecontrol.device.vo.CountVo">
+        SELECT
+        count(CASE `STATUS`='0' WHEN 1 THEN 0 END) AS faultCount,
+        count(CASE `STATUS`='1' WHEN 1 THEN 0 END ) AS callCount,
+        count(CASE `STATUS`='2' WHEN 1 THEN 0 END ) AS normalCount,
+        count(CASE `STATUS`='4' WHEN 1 THEN 0 END ) AS offCount
+        FROM device_fire_main_sensor WHERE DEL_FLAG='0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+    </select>
+
+    <select id="getStatusCount" parameterType="integer" resultType="integer">
+        SELECT COUNT(ID) FROM `device_fire_main_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        AND STATUS !='3'
+    </select>
+
+    <select id="selectByBuildingIdAndStatus" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMainSensor" resultMap="deviceFireMainSensorMap">
+        SELECT * FROM device_fire_main_sensor WHERE  DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''" >
+            AND BUILDING_ID = #{buildId}
+        </if>
+        <if test="channelId != null and channelId >0" >
+            AND CHANNEL_ID = #{channelId}
+        </if>
+        AND (STATUS=#{status} OR STATUS = #{status1})
+    </select>
+
+    <select id="selectNotsignCount" parameterType="integer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_fire_main_sensor` WHERE  DEL_FLAG = '0'
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="status != null and status != ''">
+            AND `STATUS` = #{status}
+        </if>
+        AND trim(POSITION_SIGN) = ''
+    </select>
+
+    <select id="getSeriesByBuildAndFloor" parameterType="integer" resultType="java.lang.String">
+        SELECT DISTINCT SERIES FROM device_fire_main_sensor WHERE  DEL_FLAG = '0'
+        <if test="buildId != null and buildId != ''">
+            AND `BUILDING_ID` = #{buildId}
+        </if>
+        <if test="floor != null and floor != ''">
+            AND `FLOOR` = #{floor}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND `CHANNEL_ID` = #{channelId}
+        </if>
+        AND STATUS !='3'
+    </select>
+
+    <select id="listFireMainSensorByIds" resultType="cn.turing.firecontrol.device.vo.FireMainSensorVo">
+        SELECT sensor.ID as id,
+               sensor.BUILDING_ID buildingId,
+               building.B_NAME buildingName,
+               sensor.FIRE_MAIN_ID fireMainId,
+               sensor.CHANNEL_ID channelId,
+               sensor.SERIES series,
+               sensor.SENSOR_LOOP sensorLoop,
+               sensor.ADDRESS address,
+               sensor.FLOOR floor,
+               sensor.POSITION_DESCRIPTION positionDescription,
+               main.SERVER_IP serverIp,
+               main.PORT port
+        FROM  device_fire_main_sensor  sensor
+          JOIN device_fire_main  main  ON sensor.FIRE_MAIN_ID = main.ID
+          JOIN device_building building ON sensor.BUILDING_ID = building.ID
+        WHERE main.DEL_FLAG = 0
+          AND sensor.DEL_FLAG = 0
+          AND building.DEL_FLAG = 0
+        <if test="ids != null and ids != ''">
+            AND sensor.ID IN(${ids})
+        </if>
+        <if test="exIds != null and exIds != ''">
+            AND sensor.ID NOT IN(${exIds})
+        </if>
+        <if test="serverIp != null and serverIp != ''">
+            AND main.SERVER_IP like CONCAT('%',#{serverIp},'%')
+        </if>
+        <if test="port != null and port != ''">
+            AND main.PORT like CONCAT('%',#{port},'%')
+        </if>
+        <if test="sensorLoop != null and sensorLoop != ''">
+            AND sensor.SENSOR_LOOP like CONCAT('%',#{sensorLoop},'%')
+        </if>
+        <if test="address != null and address != ''">
+            AND sensor.ADDRESS like CONCAT('%',#{address},'%')
+        </if>
+        <if test="series != null and series != ''">
+            AND sensor.SERIES like CONCAT('%',#{series},'%')
+        </if>
+        <if test="buildingId != null and buildingId != ''">
+            AND sensor.BUILDING_ID = #{buildingId}
+        </if>
+        <if test="code != null and code != ''">
+            AND building.ZXQY like '${code}'
+        </if>
+    </select>
+</mapper>

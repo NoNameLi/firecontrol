@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceTenantSetupMapper" >
+      <resultMap id="deviceTenantSetupMap" type="cn.turing.firecontrol.device.entity.DeviceTenantSetup" >
+          <result property="id" column="ID"/>
+          <result property="planSetup" column="PLAN_SETUP"  />
+          <result property="delFlag" column="DEL_FLAG"/>
+          <result property="crtUserName" column="CRT_USER_NAME"/>
+
+          <result property="crtUserId" column="CRT_USER_ID"/>
+          <result property="crtTime" column="CRT_TIME"/>
+          <result property="updUserName" column="UPD_USER_NAME"/>
+          <result property="updUserId" column="UPD_USER_ID"/>
+          <result property="updTime" column="UPD_TIME"/>
+          <result property="departId" column="DEPART_ID"/>
+          <result property="tenantId" column="TENANT_ID"/>
+     </resultMap>
+
+    <select id="getAll" resultMap="deviceTenantSetupMap">
+        SELECT * FROM `device_tenant_setup` WHERE DEL_FLAG = '0'
+    </select>
+
+</mapper>

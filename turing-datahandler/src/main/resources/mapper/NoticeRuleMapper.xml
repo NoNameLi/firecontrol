@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.datahandler.mapper.NoticeRuleMapper" >
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.datahandler.entity.NoticeRule" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="RULE_NAME" property="ruleName" jdbcType="VARCHAR" />
+    <result column="RULE_DESCRIPTION" property="ruleDescription" jdbcType="VARCHAR" />
+    <result column="INTERVAL_TIME_TXT" property="intervalTimeTxt" jdbcType="VARCHAR" />
+    <result column="INTERVAL_TIME_MINUTES" property="intervalTimeMinutes" jdbcType="INTEGER" />
+    <result column="CHANNEL_ID" property="channelId" jdbcType="INTEGER" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.turing.firecontrol.datahandler.vo.NoticeRuleVo" >
+        <result column="isStop" property="isStop" jdbcType="VARCHAR" />
+    </resultMap>
+
+  <select id="listNoticeRuleForUser" resultMap="VoResultMap">
+    SELECT r.*,
+    (case when t.DEL_FLAG is null or t.DEL_FLAG = '' then '1' else t.DEL_FLAG end) isStop
+    FROM notice_rule r
+    LEFT JOIN (select * from  notice_rule_user ru where ru.USER_ID = #{userId} and ru.NOTICE_TYPE = #{noticeType}) t
+    ON r.ID = t.NOTICE_RULE_ID
+    WHERE r.DEL_FLAG = '0'
+    <if test="channelId != null">
+        AND r.CHANNEL_ID = ${channelId}
+    </if>
+</select>
+
+    <select id="listNoticeRule" resultMap="BaseResultMap">
+        SELECT r.*
+        FROM notice_rule r
+        WHERE r.DEL_FLAG = '0'
+        <if test="channelId != null">
+            AND r.CHANNEL_ID = ${channelId}
+        </if>
+    </select>
+
+    <select id="queryById" resultMap="BaseResultMap">
+        SELECT *
+        FROM notice_rule r
+        WHERE r.DEL_FLAG = '0'
+          AND ID = #{id}
+    </select>
+</mapper>

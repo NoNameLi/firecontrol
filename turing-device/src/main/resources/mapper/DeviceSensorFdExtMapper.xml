@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorFdExtMapper">
+  <resultMap id="BaseResultMap" type="cn.turing.firecontrol.device.entity.DeviceSensorFdExt">
+    <id column="ID" jdbcType="BIGINT" property="id" />
+    <result column="FIRE_DOOR_ID" jdbcType="BIGINT" property="fireDoorId" />
+    <result column="DOOR_STATUS" jdbcType="CHAR" property="doorStatus" />
+    <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag" />
+    <result column="CRT_USER_NAME" jdbcType="VARCHAR" property="crtUserName" />
+    <result column="CRT_USER_ID" jdbcType="VARCHAR" property="crtUserId" />
+    <result column="CRT_TIME" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="UPD_USER_NAME" jdbcType="VARCHAR" property="updUserName" />
+    <result column="UPD_USER_ID" jdbcType="VARCHAR" property="updUserId" />
+    <result column="UPD_TIME" jdbcType="TIMESTAMP" property="updTime" />
+    <result column="DEPART_ID" jdbcType="VARCHAR" property="departId" />
+    <result column="TENANT_ID" jdbcType="VARCHAR" property="tenantId" />
+  </resultMap>
+
+  <resultMap id="VoResultMap" type="cn.turing.firecontrol.device.vo.FdSensorVo">
+    <id column="ID" jdbcType="BIGINT" property="id" />
+    <result column="FIRE_DOOR_ID" jdbcType="BIGINT" property="fireDoorId" />
+    <result column="DOOR_NAME" jdbcType="VARCHAR" property="fireDoorName" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="SENSOR_NO" jdbcType="VARCHAR" property="sensorNo" />
+    <result column="EQUIPMENT_TYPE" jdbcType="VARCHAR" property="equipmentType" />
+    <result column="MANUFACTURER" jdbcType="VARCHAR" property="manufacturer" />
+    <result column="MODEL" jdbcType="VARCHAR" property="model" />
+    <result column="BUILDING_ID" jdbcType="VARCHAR" property="buildingId" />
+    <result column="B_NAME" jdbcType="VARCHAR" property="buildingName" />
+    <result column="POSITION_DESCRIPTION" jdbcType="VARCHAR" property="positionDescription" />
+    <result column="POSITION_SIGN" jdbcType="VARCHAR" property="positionSign" />
+      <result column="DOOR_STATUS" jdbcType="CHAR" property="doorStatus" />
+  </resultMap>
+  <update id="deleteFireDoorSensorExt">
+      UPDATE device_sensor_fd_ext
+        SET DEL_FLAG = '1'
+      WHERE FIRE_DOOR_ID = #{doorId}
+  </update>
+
+  <select id="listSensor" resultMap="VoResultMap"
+          parameterType="cn.turing.firecontrol.device.dto.FireDoorSensorDto">
+      SELECT sensor.ID,
+             ext.FIRE_DOOR_ID,
+             door.DOOR_NAME,
+             sensor.STATUS,
+             sensor.SENSOR_NO,
+             stype.EQUIPMENT_TYPE,
+             stype.MANUFACTURER,
+             stype.MODEL,
+             sensor.BUILDING_ID,
+             building.B_NAME,
+             sensor.POSITION_DESCRIPTION,
+             sensor.POSITION_SIGN,
+             ext.DOOR_STATUS
+        FROM device_sensor sensor
+          JOIN device_building  building  ON sensor.BUILDING_ID  =  building.ID
+          JOIN device_sensor_fd_ext  ext ON sensor.ID = ext.ID
+          JOIN device_fire_door door ON ext.FIRE_DOOR_ID = door.ID
+          JOIN device_sensor_type stype ON stype.ID = sensor.SENSOR_TYPE_ID
+        WHERE sensor.DEL_FLAG = 0
+          AND building.DEL_FLAG = 0
+          AND ext.DEL_FLAG = 0
+          AND door.DEL_FLAG = 0
+          AND stype.DEL_FLAG = 0
+       <if test="id != null">
+          AND sensor.ID = #{id}
+       </if>
+       <if test="fireDoorId != null ">
+          AND ext.FIRE_DOOR_ID = #{fireDoorId}
+       </if>
+       <if test="sensorNo != null and sensorNo!=''">
+          AND sensor.SENSOR_NO like CONCAT('%',#{sensorNo},'%')
+       </if>
+
+  </select>
+
+    <select id="selectSensorExtByDoorId" resultMap="BaseResultMap">
+         SELECT * FROM device_sensor_fd_ext WHERE FIRE_DOOR_ID = #{doorId}
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT *
+          FROM device_sensor_fd_ext
+        WHERE ID = #{id}
+    </select>
+
+    <update id="updateDoorStatus">
+        UPDATE device_sensor_fd_ext
+          SET DOOR_STATUS = #{status}
+        WHERE ID = #{id}
+    </update>
+</mapper>

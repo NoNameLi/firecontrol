@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceInspectionSchemeMapper" >
+  <resultMap id="deviceInspectionSchemeMap" type="cn.turing.firecontrol.device.entity.DeviceInspectionScheme" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="INSPECTION_ROUTE_ID" property="inspectionRouteId" jdbcType="INTEGER" />
+    <result column="START_TIME" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="PATROL_CYCLE" property="patrolCycle" jdbcType="INTEGER" />
+    <result column="TIME_COUNT" property="timeCount" jdbcType="VARCHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+        <resultMap id="map" type="Map" >
+            <id column="ID" property="id" jdbcType="INTEGER" />
+            <result column="INSPECTION_ROUTE_ID" property="inspectionRouteId" jdbcType="INTEGER" />
+            <result column="START_TIME" property="startTime" jdbcType="TIMESTAMP" />
+            <result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" />
+            <result column="PATROL_CYCLE" property="patrolCycle" jdbcType="INTEGER" />
+            <result column="TIME_COUNT" property="timeCount" jdbcType="VARCHAR" />
+            <result column="ROUTE_NAME" property="routeName" jdbcType="VARCHAR" />
+        </resultMap>
+
+           <!-- 根据巡检路线判断绑定的巡检计划-->
+          <select id="selectByInspectionRouteId" parameterType="Integer" resultMap="deviceInspectionSchemeMap">
+             SELECT `ID`,`INSPECTION_ROUTE_ID`,`START_TIME`,`END_TIME`,`PATROL_CYCLE` FROM `device_inspection_scheme` WHERE DEL_FLAG = '0'
+             <if test="routeId != null and routeId !=''">
+                AND `INSPECTION_ROUTE_ID` = #{routeId}
+             </if>
+              <if test="tenantId != null and tenantId !=''">
+                  AND `TENANT_ID` = #{tenantId}
+              </if>
+          </select>
+
+        <select id="selectPageList"  resultMap="map" >
+            SELECT a.`ID`,b.`ROUTE_NAME`,a.`START_TIME`,a.`END_TIME`,a.`PATROL_CYCLE`,a.`TIME_COUNT` FROM `device_inspection_scheme` a LEFT JOIN `device_inspection_route` b  ON a.`INSPECTION_ROUTE_ID`=b.`ID` WHERE a.`DEL_FLAG`='0' AND b.`DEL_FLAG`='0'
+            <if test="routeName != null and routeName != ''">
+                AND b.`ROUTE_NAME` like '%${routeName}%'
+            </if>
+            <if test="patrolCycle != null">
+                AND a.`PATROL_CYCLE` = #{patrolCycle}
+            </if>
+            <if test="startTimeFirst != null and startTimeLast != null">
+                AND a.`START_TIME` &gt;= #{startTimeFirst} AND a.`START_TIME` &lt;= #{startTimeLast}
+            </if>
+            <if test="endTimeFirst != null and endTimeLast != null">
+                AND a.`END_TIME` &gt;= #{endTimeFirst} AND a.`END_TIME` &lt;= #{endTimeLast}
+            </if>
+            <if test="tenantId != null and tenantId !=''">
+                AND a.`TENANT_ID` = #{tenantId}
+            </if>
+            order by a.CRT_TIME DESC
+        </select>
+
+
+        <select id="getAllInspectionTouteId"  resultType="Integer">
+            SELECT DISTINCT `INSPECTION_ROUTE_ID` FROM `device_inspection_scheme`  WHERE DEL_FLAG = '0'
+            <if test="tenantId != null and tenantId !=''">
+                AND `TENANT_ID` = #{tenantId}
+            </if>
+            <if test="id != null ">
+                AND `ID` != #{id}
+            </if>
+        </select>
+
+
+        <select id="getListAll"  resultMap="deviceInspectionSchemeMap">
+            SELECT * FROM `device_inspection_scheme` WHERE DEL_FLAG = '0'
+        </select>
+
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceInspectionTasksMapper" >
+  <resultMap id="deviceInspectionTasks" type="cn.turing.firecontrol.device.entity.DeviceInspectionTasks" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+    <result column="INSPECTION_ROUTE_ID" property="inspectionRouteId" jdbcType="INTEGER" />
+    <result column="INSPECTION_DATE" property="inspectionDate" jdbcType="TIMESTAMP" />
+    <result column="INSPECTION_TIME_PERIOD" property="inspectionTimePeriod" jdbcType="VARCHAR" />
+    <result column="PATROL_CYCLE" property="patrolCycle" jdbcType="INTEGER" />
+    <result column="STATUS" property="status" jdbcType="CHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="selectMyTasksList" resultMap="deviceInspectionTasks" parameterType="cn.turing.firecontrol.device.entity.DeviceInspectionTasks">
+    SELECT * FROM device_inspection_tasks where DEL_FLAG='0'
+    <if test="userId != null and userId != ''">
+      AND USER_ID=#{userId}
+    </if>
+    <if test="tenantId != null and tenantId !=''">
+      AND `TENANT_ID` = #{tenantId}
+    </if>
+  </select>
+
+  <select id="selectTasksList" resultMap="deviceInspectionTasks" parameterType="cn.turing.firecontrol.device.entity.DeviceInspectionTasks">
+    SELECT * FROM device_inspection_tasks where DEL_FLAG='0'
+    <if test="status != null and status != ''">
+      AND STATUS=#{status}
+    </if>
+    <if test="tenantId != null and tenantId !=''">
+      AND `TENANT_ID` = #{tenantId}
+    </if>
+  </select>
+
+  <select id="selectByRouteId" resultMap="deviceInspectionTasks" parameterType="cn.turing.firecontrol.device.entity.DeviceInspectionTasks">
+    SELECT * FROM device_inspection_tasks where DEL_FLAG='0'
+    <if test="routeId != null and routeId != ''">
+      AND INSPECTION_ROUTE_ID=#{routeId}
+    </if>
+    <if test="userId != null and userId != ''">
+      AND USER_ID=#{userId}
+    </if>
+  </select>
+
+  <update id="update">
+      UPDATE `device_inspection_tasks` SET `DEL_FLAG` = '1' WHERE ID =#{_parameter}
+  </update>
+
+  <select id="getListAll"  resultMap="deviceInspectionTasks">
+      SELECT * FROM `device_inspection_tasks` WHERE DEL_FLAG = '0'
+   </select>
+
+  <select id="getById"  resultMap="deviceInspectionTasks">
+      SELECT * FROM `device_inspection_tasks` WHERE DEL_FLAG = '0' AND ID=#{_parameter}
+  </select>
+
+  <select id="getByRouteId" resultMap="deviceInspectionTasks" parameterType="cn.turing.firecontrol.device.entity.DeviceInspectionTasks">
+    SELECT * FROM device_inspection_tasks where DEL_FLAG='0'
+    <if test="routeId != null and routeId != ''">
+      AND INSPECTION_ROUTE_ID=#{routeId}
+    </if>
+    <if test="tenantId != null and tenantId != ''">
+      AND TENANT_ID=#{tenantId}
+    </if>
+  </select>
+
+  <select id="getAllList"  resultMap="deviceInspectionTasks">
+      SELECT * FROM `device_inspection_tasks` WHERE DEL_FLAG = '0'
+    <if test="tenantId != null and tenantId !=''">
+      AND `TENANT_ID` = #{tenantId}
+    </if>
+   </select>
+
+  <select id="selectTaskCount" resultType="Long">
+   SELECT sum(1*b.LABEL_COUNT) from device_inspection_tasks a left JOIN device_inspection_route b on a.INSPECTION_ROUTE_ID=b.id
+  </select>
+</mapper>

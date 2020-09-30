@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorManufacturerMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceSensorManufacturer" id="deviceSensorManufacturerMap">
+        <result property="id" column="ID"/>
+        <result property="sensorManufacturer" column="SENSOR_MANUFACTURER"/>
+        <result property="codeName" column="CODE_NAME"/>
+        <result property="sensorType" column="SENSOR_TYPE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <!-- 分页查询  搜索传感器厂商-->
+    <select id="selectPageList"  resultMap="deviceSensorManufacturerMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorManufacturer">
+        SELECT ID,SENSOR_MANUFACTURER FROM `device_sensor_manufacturer`  WHERE DEL_FLAG = '0'
+        <if test="sensorManufacturer != null and sensorManufacturer != ''">
+            AND `SENSOR_MANUFACTURER` like '%${sensorManufacturer}%'
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!--判断传感器厂商是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorManufacturer" resultType="Integer">
+        SELECT COUNT(ID) FROM `device_sensor_manufacturer`  WHERE DEL_FLAG = '0'
+        <if test="sensorManufacturer != null and sensorManufacturer != ''">
+            AND `SENSOR_MANUFACTURER`=#{sensorManufacturer}
+        </if>
+    </select>
+
+    <!-- 传感器厂商的下拉框，选择传感器厂商-->
+    <select id="selectedType" resultType="String">
+        SELECT SENSOR_MANUFACTURER FROM `device_sensor_manufacturer` WHERE DEL_FLAG = '0' ORDER BY CRT_TIME DESC
+    </select>
+
+    <!-- 传感器厂商的下拉框，选择传感器厂商-->
+    <select id="selectedTypeId"  resultMap="deviceSensorManufacturerMap">
+        SELECT ID,SENSOR_MANUFACTURER FROM `device_sensor_manufacturer` WHERE DEL_FLAG = '0' ORDER BY CRT_TIME DESC
+    </select>
+
+    <!-- 根据厂商的名称查询-->
+    <select id="selecteByName"  resultMap="deviceSensorManufacturerMap" parameterType="String">
+        SELECT ID,SENSOR_MANUFACTURER FROM `device_sensor_manufacturer` WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''">
+            AND `SENSOR_MANUFACTURER`=#{_parameter}
+        </if>
+    </select>
+
+</mapper>

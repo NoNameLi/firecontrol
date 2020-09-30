@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceCollectingDeviceSeriesMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceSeries" id="deviceCollectingDeviceSeriesMap">
+        <result property="id" column="ID"/>
+        <result property="type" column="TYPE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+
+    <!--  分页采集设备系列-->
+    <select id="selectPageList"  resultMap="deviceCollectingDeviceSeriesMap" parameterType="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceSeries">
+        SELECT ID,TYPE FROM `device_collecting_device_series`  WHERE  DEL_FLAG = '0'
+        <if test="type != null and type != ''">
+            AND `TYPE` like '%${type}%'
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!---查看系列是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceSeries" resultType="Integer">
+        SELECT COUNT(*) FROM `device_collecting_device_series` WHERE  DEL_FLAG = '0'
+        <if test="type != null and type != ''">
+            AND `TYPE`=#{type}
+        </if>
+    </select>
+
+    <!-- 采集设备的下拉框-->
+    <select id="selectedType" resultType="String">
+        SELECT TYPE  FROM `device_collecting_device_series` WHERE  DEL_FLAG = '0' order by CRT_TIME DESC
+    </select>
+
+
+</mapper>

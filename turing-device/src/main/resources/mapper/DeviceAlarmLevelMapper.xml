@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceAlarmLevelMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceAlarmLevel" id="deviceAlarmLevelMap">
+        <result property="id" column="ID"/>
+        <result property="level" column="LEVEL"/>
+        <result property="color" column="COLOR"/>
+        <result property="sort" column="SORT"/>
+        <result property="levelInstructions" column="LEVEL_INSTRUCTIONS"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <resultMap type="Map" id="map">
+        <result property="alId" column="ID"/>
+        <result property="level" column="LEVEL"/>
+    </resultMap>
+
+
+    <!--  分页按排序字段排序-->
+    <select id="selectPageList"  resultMap="deviceAlarmLevelMap" parameterType="cn.turing.firecontrol.device.entity.DeviceAlarmLevel">
+        SELECT ID,LEVEL,SORT,LEVEL_INSTRUCTIONS,COLOR FROM `device_alarm_level`  WHERE  DEL_FLAG = '0'
+        order by SORT ASC
+    </select>
+
+    <!-- 查看等级，排序是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceAlarmLevel" resultType="Integer">
+        SELECT COUNT(*) FROM `device_alarm_level` WHERE  DEL_FLAG = '0'
+        <if test="level != null and level != ''">
+            AND `LEVEL`=#{level}
+        </if>
+
+        <if test="sort!=null">
+            AND `SORT`=#{sort}
+        </if>
+
+        <if test="color != null and color != ''">
+            AND `COLOR`=#{color}
+        </if>
+
+
+    </select>
+
+    <!-- 查询所有的等级，只显示id，跟等级名称-->
+    <select id="getAll" resultMap="map">
+        SELECT ID,LEVEL FROM `device_alarm_level` WHERE  DEL_FLAG = '0'  order by SORT ASC
+    </select>
+</mapper>

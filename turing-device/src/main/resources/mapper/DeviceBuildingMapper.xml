@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceBuildingMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceBuilding" id="deviceBuildingMap">
+        <result property="id" column="ID"/>
+        <result property="bid" column="BID"/>
+        <result property="oid" column="OID"/>
+        <result property="bName" column="B_NAME"/>
+        <result property="bAddress" column="B_ADDRESS"/>
+        <result property="zxqy" column="ZXQY"/>
+        <result property="street" column="STREET"/>
+        <result property="road" column="ROAD"/>
+        <result property="mnph" column="MNPH"/>
+        <result property="ldz" column="LDZ"/>
+        <result property="addressDetail" column="ADDRESS_DETAIL"/>
+        <result property="gis" column="GIS"/>
+        <result property="linkman" column="LINKMAN"/>
+        <result property="linkphone" column="LINKPHONE"/>
+        <result property="bState" column="B_STATE"/>
+        <result property="bTime" column="B_TIME"/>
+        <result property="propertRight" column="PROPERT_RIGHT"/>
+        <result property="bArea" column="B_AREA"/>
+        <result property="bZdArea" column="B_ZD_AREA"/>
+        <result property="bHight" column="B_HIGHT"/>
+        <result property="bZcArea" column="B_ZC_AREA"/>
+        <result property="upFloor" column="UP_FLOOR"/>
+        <result property="upFloorArea" column="UP_FLOOR_AREA"/>
+        <result property="underFloor" column="UNDER_FLOOR"/>
+        <result property="underFloorArea" column="UNDER_FLOOR_AREA"/>
+        <result property="bStore" column="B_STORE"/>
+        <result property="bStrture" column="B_STRTURE"/>
+        <result property="bStrture1" column="B_STRTURE1"/>
+        <result property="ctrlroomPlace" column="CTRLROOM_PLACE"/>
+        <result property="fireRate" column="FIRE_RATE"/>
+        <result property="fireDanger" column="FIRE_DANGER"/>
+        <result property="mostworkerr" column="MOSTWORKERR"/>
+        <result property="liftCount" column="LIFT_COUNT"/>
+        <result property="liftPlace" column="LIFT_PLACE"/>
+        <result property="refugeNumber" column="REFUGE_NUMBER"/>
+        <result property="refugeArea" column="REFUGE_AREA"/>
+        <result property="refugePlace" column="REFUGE_PLACE"/>
+        <result property="useKind" column="USE_KIND"/>
+        <result property="haveFireproof" column="HAVE_FIREPROOF"/>
+        <result property="xfss" column="XFSS"/>
+        <result property="xfssOther" column="XFSS_OTHER"/>
+        <result property="xfssIntact" column="XFSS_INTACT"/>
+        <result property="nearBuilding" column="NEAR_BUILDING"/>
+        <result property="geogInfo" column="GEOG_INFO"/>
+        <result property="haveCtrlroom" column="HAVE_CTRLROOM"/>
+        <result property="useType" column="USE_TYPE"/>
+        <result property="sysOrganId" column="SYS_ORGAN_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <select id="selectByOid" resultType="cn.turing.firecontrol.device.entity.DeviceBuilding" parameterType="java.lang.Integer">
+        SELECT * FROM `device_building` where DEL_FLAG = '0' AND OID= #{id}
+    </select>
+
+    <!-- 查看联网单位绑定的建筑id-->
+    <select id="selectByOidResultIds" resultType="Integer" parameterType="Integer">
+        SELECT ID FROM `device_building` where DEL_FLAG = '0' AND OID= #{oId}
+    </select>
+
+    <select id="selectByBname" resultMap="deviceBuildingMap" parameterType="java.lang.String">
+        SELECT * FROM `device_building` where DEL_FLAG = '0' AND B_NAME= #{buildingName}
+    </select>
+
+    <select id="selectQuery" resultMap="deviceBuildingMap" parameterType="cn.turing.firecontrol.device.entity.DeviceBuilding">
+        SELECT * FROM `device_building` where DEL_FLAG = '0'
+        <if test="buildingName != null and buildingName != ''">
+            AND `B_NAME` like '%${buildingName}%'
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!--根据联网单位ids-->
+    <select id="selectByOids" resultMap="deviceBuildingMap" parameterType="String">
+        SELECT ID,B_NAME  from `device_building`  WHERE  DEL_FLAG = '0' AND ID IN(${_parameter})  order by CRT_TIME DESC
+    </select>
+
+    <!--查询所有6位编码-->
+    <select id="selectAllZxqy" resultMap="deviceBuildingMap">
+       SELECT * FROM device_building  WHERE  DEL_FLAG = '0' ORDER BY ZXQY
+    </select>
+
+    <!--根据6位编码查询建筑-->
+    <select id="selectByZxqy" resultMap="deviceBuildingMap" parameterType="String">
+       SELECT * FROM device_building  WHERE  DEL_FLAG = '0' AND ZXQY = #{zxqy}
+    </select>
+
+    <!--根据6位编码查询建筑  id-->
+    <select id="selectByZxqzResultIds" parameterType="String" resultType="Integer">
+         SELECT id FROM device_building where DEL_FLAG = '0' AND ZXQY like '${_parameter}'
+    </select>
+
+    <!--查询所有建筑名称-->
+    <select id="getBname" resultType="String">
+         SELECT B_NAME FROM device_building WHERE DEL_FLAG = '0'
+    </select>
+
+    <!--<select id="selectByBnameLike" resultMap="deviceBuildingMap" parameterType="java.lang.String">
+        SELECT * FROM `device_building` where DEL_FLAG = '0' AND B_NAME LIKE '%${bName}%'
+        <if test="tenantId != null and tenantId != ''">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>-->
+
+    <sql id="baseColumn">
+        ${tableName}.ID id,${tableName}.BID bid,${tableName}.OID oid,${tableName}.B_NAME bName,${tableName}.B_ADDRESS bAddress,${tableName}.ZXQY zxqy,${tableName}.STREET street,${tableName}.ROAD road,${tableName}.MNPH mnph,${tableName}.LDZ ldz,${tableName}.ADDRESS_DETAIL addressDetail,${tableName}.GIS gis,${tableName}.LINKMAN linkman,${tableName}.LINKPHONE linkphone,${tableName}.B_STATE bState,${tableName}.B_TIME bTime,${tableName}.PROPERT_RIGHT propertRight,${tableName}.B_AREA bArea,${tableName}.B_ZD_AREA bZdArea,${tableName}.B_HIGHT bHight,${tableName}.B_ZC_AREA bZcArea,${tableName}.UP_FLOOR upFloor,${tableName}.UP_FLOOR_AREA upFloorArea,${tableName}.UNDER_FLOOR underFloor,${tableName}.UNDER_FLOOR_AREA underFloorArea,${tableName}.B_STORE bStore,${tableName}.B_STRTURE bStrture,${tableName}.B_STRTURE1 bStrture1,${tableName}.CTRLROOM_PLACE ctrlroomPlace,${tableName}.FIRE_RATE fireRate,${tableName}.FIRE_DANGER fireDanger,${tableName}.MOSTWORKERR mostworkerr,${tableName}.LIFT_COUNT liftCount,${tableName}.LIFT_PLACE liftPlace,${tableName}.REFUGE_NUMBER refugeNumber,${tableName}.REFUGE_AREA refugeArea,${tableName}.REFUGE_PLACE refugePlace,${tableName}.USE_KIND useKind,${tableName}.HAVE_FIREPROOF haveFireproof,${tableName}.XFSS xfss,${tableName}.XFSS_OTHER xfssOther,${tableName}.XFSS_INTACT xfssIntact,${tableName}.NEAR_BUILDING nearBuilding,${tableName}.GEOG_INFO geogInfo,${tableName}.HAVE_CTRLROOM haveCtrlroom,${tableName}.USE_TYPE useType,${tableName}.SYS_ORGAN_ID sysOrganId,${tableName}.DEL_FLAG delFlag,${tableName}.CRT_USER_NAME crtUserName,${tableName}.CRT_USER_ID crtUserId,${tableName}.CRT_TIME crtTime,${tableName}.UPD_USER_NAME updUserName,${tableName}.UPD_USER_ID updUserId,${tableName}.UPD_TIME updTime,${tableName}.DEPART_ID departId,${tableName}.TENANT_ID tenantId
+    </sql>
+
+    <select id="selectByBnameLike" resultType="cn.turing.firecontrol.device.entity.DeviceBuilding" parameterType="java.lang.String">
+        SELECT <include refid="baseColumn">
+                  <property name="tableName" value="db"/>
+                </include>
+                ,dbi.BUILDING_IMAGE_X imageX,dbi.BUILDING_IMAGE_Y imageY FROM `device_building` db
+        left join device_building_image dbi on db.ID = dbi.BUILDING_ID
+        where DEL_FLAG = '0' AND B_NAME LIKE '%${bName}%'
+        <if test="tenantId != null and tenantId != ''">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 查看建筑名称是否重复-->
+    <select id="selectByCount" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM `device_building` WHERE DEL_FLAG = '0' AND `B_NAME` = #{_parameter}
+    </select>
+
+    <select id="getById" resultMap="deviceBuildingMap" parameterType="Integer">
+        SELECT * FROM `device_building` where ID = #{id}
+    </select>
+
+    <select id="selectByArea" parameterType="String" resultMap="deviceBuildingMap">
+        SELECT b.* FROM device_building b
+        LEFT JOIN device_sensor s ON s.BUILDING_ID = b.ID
+        WHERE  b.DEL_FLAG = '0'
+        <if test="zxqy != null and zxqy != ''">
+            AND b.ZXQY LIKE #{zxqy}
+        </if>
+        <if test="channelId != null and channelId != ''">
+            AND s.CHANNEL_ID = #{channelId}
+        </if>
+        GROUP by b.ID
+        order by B_NAME ASC
+    </select>
+
+    <select id="selectBySensor" resultMap="deviceBuildingMap" parameterType="Integer">
+        SELECT DISTINCT b.* FROM device_building b JOIN device_sensor s ON b.ID = s.BUILDING_ID WHERE 1=1
+        <if test="_parameter != null and _parameter != ''">
+            AND s.CHANNEL_ID = #{_parameter}
+        </if>
+    </select>
+
+    <select id="getAll" resultMap="deviceBuildingMap">
+          SELECT * FROM `device_building` WHERE DEL_FLAG = '0'
+          <if test="_parameter != null and _parameter != ''">
+             AND ID = #{_parameter}
+          </if>
+    </select>
+
+    <select id="getAllAndDelflag" resultMap="deviceBuildingMap">
+           SELECT DISTINCT B_NAME,GIS FROM `device_building`
+    </select>
+
+    <select id="getTotalCountAndArea" resultType="map">
+        select count(*) buildingCount, sum(B_ZD_AREA) area from device_building
+    </select>
+    <select id="getAlarmBuilding" resultType="cn.turing.firecontrol.device.vo.DeviceBuildingVo">
+        SELECT b.ID,count(1) as num,b.gis from device_sensor a LEFT JOIN device_building b on a.BUILDING_ID=b.id
+        where  a.BUILDING_ID is not null  and a.STATUS='1'
+        <if test="channelId != null">
+            AND a.CHANNEL_ID = #{channelId}
+        </if>
+        GROUP BY  a.BUILDING_ID ,b.gis
+    </select>
+
+    <select id="getLatestBuilding" resultType="cn.turing.firecontrol.device.vo.DeviceBuildingVo">
+          SELECT * from device_building   ORDER BY crt_time desc LIMIT 1
+    </select>
+    <select id="getAllGis" resultType="cn.turing.firecontrol.device.vo.DeviceBuildingVo">
+          SELECT 1 as type,id,gis ,B_NAME as name from device_building where DEL_FLAG='0'
+    </select>
+</mapper>

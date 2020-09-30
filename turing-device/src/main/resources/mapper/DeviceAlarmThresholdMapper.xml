@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceAlarmThresholdMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceAlarmThreshold" id="deviceAlarmThresholdMap">
+        <result property="id" column="ID"/>
+        <result property="mpId" column="MP_ID"/>
+        <result property="alId" column="AL_ID"/>
+        <result property="alarmMin" column="ALARM_MIN"/>
+        <result property="alarmMax" column="ALARM_MAX"/>
+        <result property="alarmSymbolMax" column="ALARM_SYMBOL_MAX"/>
+        <result property="alarmSymbolMin" column="ALARM_SYMBOL_MIN"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+
+    <!-- 根据测点id查出所有的等级的最大值最小值 -->
+    <resultMap type="Map" id="levelThresholdMap">
+        <result property="id" column="id"/>
+        <result property="alId" column="AL_ID"/>
+        <result property="alarmMin" column="ALARM_MIN"/>
+        <result property="alarmMax" column="ALARM_MAX"/>
+        <result property="alarmSymbolMax" column="ALARM_SYMBOL_MAX"/>
+        <result property="alarmSymbolMin" column="ALARM_SYMBOL_MIN"/>
+        <result property="level" column="LEVEL"/>
+        <result property="mpId" column="MP_ID"/>
+        <result property="measuringPoint" column="MEASURING_POINT"/>
+        <result property="unit" column="DATA_UNIT"/>
+    </resultMap>
+
+
+
+
+    <!-- 查出所有得测点Id-->
+    <select id="getMeasuringPointIds" resultType="Integer" >
+        SELECT DISTINCT MP_ID FROM `device_alarm_threshold` WHERE 1=1
+    </select>
+
+    <!-- 根据测点id查出所有的等级的最大值最小值 -->
+    <select id="selectByMeasuringPointId" parameterType="Integer" resultMap="levelThresholdMap">
+        SELECT a.ID,a.`ALARM_MIN`,a.`ALARM_MAX`,a.ALARM_SYMBOL_MAX,a.ALARM_SYMBOL_MIN,b.`LEVEL` FROM `device_alarm_threshold` a,`device_alarm_level` b  WHERE a.`AL_ID`=b.`ID`  AND a.`MP_ID`=#{measuringPointIds} ORDER BY b.`SORT`
+    </select>
+
+    <!-- 根据ids批量删除-->
+    <delete id="deleteByIds" parameterType="String" >
+        DELETE FROM `device_alarm_threshold` WHERE id IN(${_parameter})
+    </delete>
+
+    <!-- 根据报警等级id删除-->
+    <delete id="deleteByAlId" parameterType="Integer">
+      DELETE FROM `device_alarm_threshold` WHERE AL_ID = #{alId}
+    </delete>
+
+    <!-- 根据测点id查询-->
+    <select id="selectByMpid" parameterType="Integer" resultMap="deviceAlarmThresholdMap">
+      select * FROM `device_alarm_threshold` WHERE MP_ID = #{mpid}
+    </select>
+
+    <select id="selectByAlrmData" resultMap="deviceAlarmThresholdMap">
+      SELECT * FROM device_alarm_threshold WHERE MP_ID=#{id} AND (#{alrmData} &gt;= ALARM_MIN OR ALARM_MIN IS NULL ) AND (#{alrmData} &lt;= ALARM_MAX OR ALARM_MAX IS NULL)
+        <if test="tenantId != null and tenantId != ''">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 实时监测  获取等级-->
+    <select id="selectByAlrmLevel" resultMap="deviceAlarmThresholdMap">
+        SELECT * FROM device_alarm_threshold WHERE MP_ID=#{id} AND (#{alrmData} &gt;= ALARM_MIN OR ALARM_MIN IS NULL ) AND (#{alrmData} &lt;= ALARM_MAX OR ALARM_MAX IS NULL)
+    </select>
+</mapper>

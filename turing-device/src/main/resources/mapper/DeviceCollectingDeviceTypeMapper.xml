@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceCollectingDeviceTypeMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceType" id="deviceCollectingDeviceTypeMap">
+        <result property="id" column="ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="manufacturer" column="MANUFACTURER"/>
+        <result property="model" column="MODEL"/>
+        <result property="maintenanceCycleUnit" column="MAINTENANCE_CYCLE_UNIT"/>
+        <result property="maintenanceCycleValue" column="MAINTENANCE_CYCLE_VALUE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="manufacturerId" column="MANUFACTURER_ID"/>
+    </resultMap>
+
+    <resultMap type="Map" id="map">
+        <result property="id" column="ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="manufacturer" column="MANUFACTURER"/>
+        <result property="model" column="MODEL"/>
+        <result property="maintenanceCycleUnit" column="MAINTENANCE_CYCLE_UNIT"/>
+        <result property="maintenanceCycleValue" column="MAINTENANCE_CYCLE_VALUE"/>
+    </resultMap>
+
+    <!--根据传采集系列设备的的id查询出有多少站点使用了改采集设备，返回子站点的id-->
+    <select id="selectByCollectingDeviceSeriesIdResultTenantId" parameterType="Integer" resultType="String">
+       SELECT DISTINCT `TENANT_ID` FROM `device_collecting_device_type` WHERE DEL_FLAG = '0' AND EQUIPMENT_TYPE = (SELECT TYPE FROM `device_collecting_device_series` WHERE id = #{collectingDeviceSeriesId})
+    </select>
+
+    <!-- 根据厂商绑定的网关，查询多少人使用了改厂商的网关，返回子站点的id-->
+    <select id="selectByCollectingManufacturerIdResultTenantID" parameterType="Integer" resultType="String">
+        SELECT DISTINCT TENANT_ID FROM `device_collecting_device_type` WHERE  DEL_FLAG = '0' AND  `MANUFACTURER_ID` IN (  SELECT ID FROM `device_collecting_manufacturer` WHERE ID=#{manufacturerId})
+</select>
+
+
+
+    <!-- 分页查询 精确 搜索厂商、采集器系列、型号-->
+    <select id="selectPageList"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceType">
+        SELECT ID,EQUIPMENT_TYPE,MANUFACTURER,MODEL FROM `DEVICE_COLLECTING_DEVICE_TYPE`  WHERE DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != '' and manufacturer != '全部'">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+
+    <!--根据厂商查询对应的类型和对应的型号-->
+    <select id="selectByType" parameterType="java.util.Map" resultMap="deviceCollectingDeviceTypeMap">
+        SELECT * FROM `DEVICE_COLLECTING_DEVICE_TYPE`  WHERE DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+    </select>
+
+
+    <!-- 获取所有的厂商-->
+    <select id="getManufacturer" resultType="String" >
+        SELECT DISTINCT MANUFACTURER FROM  `DEVICE_COLLECTING_DEVICE_TYPE`  WHERE DEL_FLAG = '0'
+    </select>
+
+
+
+    <!-- 获取所有的系列-->
+    <select id="getEquipmentType" resultType="String" >
+        SELECT DISTINCT EQUIPMENT_TYPE FROM  `DEVICE_COLLECTING_DEVICE_TYPE`  WHERE DEL_FLAG = '0'
+    </select>
+
+    <!-- 获取根据厂商获取所有的类型-->
+    <select id="getEquipmentTypeByMF" resultType="String" parameterType="String" >
+        SELECT DISTINCT `EQUIPMENT_TYPE` FROM `device_collecting_device_type` WHERE  DEL_FLAG = '0' AND `MANUFACTURER` =#{_parameter}
+    </select>
+
+
+
+    <!-- 根据厂商，类型获取所有的型号-->
+    <select id="getModel" parameterType="java.util.Map" resultType="String">
+        SELECT DISTINCT MODEL FROM `DEVICE_COLLECTING_DEVICE_TYPE`  WHERE  DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+    </select>
+
+
+
+
+    <update id="updateCollecting" parameterType="cn.turing.firecontrol.device.entity.DeviceCollectingDeviceType">
+         UPDATE `device_collecting_device_type`  SET MANUFACTURER = #{manufacturer} WHERE `MANUFACTURER_ID` = #{manufacturerId}
+    </update>
+
+
+
+
+
+</mapper>

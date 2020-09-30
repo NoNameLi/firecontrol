@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceMessageRecipientsMapper" >
+        <resultMap id="deviceMessageRecipients" type="cn.turing.firecontrol.device.entity.DeviceMessageRecipients" >
+              <id column="ID" property="id"  />
+              <result column="NOTICE_TYPE" property="noticeType"  />
+              <result column="MESSAGE_RECIPIENTS_USERID" property="messageRecipientsUserid"  />
+              <result column="CRT_USER_NAME" property="crtUserName"  />
+              <result column="CRT_USER_ID" property="crtUserId" />
+              <result column="CRT_TIME" property="crtTime"  />
+              <result column="UPD_USER_NAME" property="updUserName"  />
+              <result column="UPD_USER_ID" property="updUserId"  />
+              <result column="UPD_TIME" property="updTime"  />
+              <result column="DEPART_ID" property="departId"  />
+              <result column="TENANT_ID" property="tenantId" />
+        </resultMap>
+
+
+      <select id="selectByNotictType"  resultMap="deviceMessageRecipients" parameterType="String">
+            SELECT  ID,MESSAGE_RECIPIENTS_USERID FROM `device_message_recipients`  WHERE 1=1
+            <if test="noticeType != null and noticeType != ''">
+                  AND `NOTICE_TYPE`=#{noticeType}
+            </if>
+            <if test="tenantId != null and tenantId != ''">
+                  AND `TENANT_ID`=#{tenantId}
+            </if>
+            order by CRT_TIME DESC
+      </select>
+
+      <select id="findByNotictType"  resultType="String" parameterType="String">
+            SELECT  MESSAGE_RECIPIENTS_USERID FROM `device_message_recipients`  WHERE 1=1
+            <if test="noticeType != null and noticeType != ''">
+                  AND `NOTICE_TYPE`=#{noticeType}
+            </if>
+            order by CRT_TIME DESC
+      </select>
+
+</mapper>

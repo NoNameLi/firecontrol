@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceMeasuringPointMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceMeasuringPoint" id="deviceMeasuringPointMap">
+        <result property="id" column="ID"/>
+        <result property="measuringPoint" column="MEASURING_POINT"/>
+        <result property="codeName" column="CODE_NAME"/>
+        <result property="dataUnit" column="DATA_UNIT"/>
+        <result property="measuringPointType" column="MEASURING_POINT_TYPE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="normalValueMax" column="NORMAL_VALUE_MAX"/>
+        <result property="normalSymbolMax" column="NORMAL_SYMBOL_MAX"/>
+        <result property="normalValueMin" column="NORMAL_VALUE_MIN"/>
+        <result property="normalSymbolMin" column="NORMAL_SYMBOL_MIN"/>
+    </resultMap>
+
+    <resultMap id="map" type="Map" >
+        <result property="id" column="ID"/>
+        <result property="measuringPoint" column="MEASURING_POINT"/>
+        <result property="dataUnit" column="DATA_UNIT"/>
+        <result property="codeName" column="CODE_NAME"/>
+        <result property="measuringPointType" column="MEASURING_POINT_TYPE"/>
+        <result property="normalValueMax" column="NORMAL_VALUE_MAX"/>
+        <result property="normalSymbolMax" column="NORMAL_SYMBOL_MAX"/>
+        <result property="normalValueMin" column="NORMAL_VALUE_MIN"/>
+        <result property="normalSymbolMin" column="NORMAL_SYMBOL_MIN"/>
+    </resultMap>
+
+    <!-- 查看测点，代号名是否重复-->
+    <select id="selectByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceMeasuringPoint" resultType="Integer">
+        SELECT COUNT(*) FROM `device_measuring_point` WHERE DEL_FLAG = '0'
+        <if test="measuringPoint != null and measuringPoint != ''">
+            AND `MEASURING_POINT`=#{measuringPoint}
+        </if>
+
+        <if test="codeName != null and codeName != ''">
+            AND `CODE_NAME`=#{codeName}
+        </if>
+    </select>
+
+
+    <!---查看传感器系列绑定的测点-->
+    <select id="selectBySensorSeriesIdResult" parameterType="Integer" resultMap="deviceMeasuringPointMap">
+        SELECT ID,MEASURING_POINT,DATA_UNIT,CODE_NAME,MEASURING_POINT_TYPE FROM  `device_measuring_point` WHERE DEL_FLAG = '0' AND ID IN(SELECT MP_ID FROM `device_sensor_mp_relation` WHERE `SENSOR_SERIES_ID` = #{sensorSeriesId})
+    </select>
+
+    <!---查看传感器系列绑定的测点-->
+    <select id="selectBySensorSeriesIdResultMp" parameterType="Integer" resultType="String">
+        SELECT MEASURING_POINT FROM  `device_measuring_point` WHERE DEL_FLAG = '0' AND ID IN(SELECT MP_ID FROM `device_sensor_mp_relation` WHERE `SENSOR_SERIES_ID` = #{sensorSeriesId})
+    </select>
+
+
+    <!---查看传感器系列绑定的测点-->
+    <select id="selectBySensorSeriesIdResultId" parameterType="Integer" resultType="Integer">
+        SELECT id FROM  `device_measuring_point` WHERE DEL_FLAG = '0' AND ID IN(SELECT MP_ID FROM `device_sensor_mp_relation` WHERE `SENSOR_SERIES_ID` = #{sensorSeriesId})
+    </select>
+
+
+    <!--  分页搜索测点,监测类型-->
+    <select id="selectPageList"  resultMap="deviceMeasuringPointMap" parameterType="cn.turing.firecontrol.device.entity.DeviceMeasuringPoint">
+        SELECT  ID,MEASURING_POINT,DATA_UNIT,CODE_NAME,MEASURING_POINT_TYPE FROM `device_measuring_point`  WHERE DEL_FLAG = '0'
+        <if test="measuringPoint != null and measuringPoint != ''">
+            AND `MEASURING_POINT` like '%${measuringPoint}%'
+        </if>
+        <if test="measuringPointType != null and measuringPointType != '' and measuringPointType != '-1'">
+            AND `MEASURING_POINT_TYPE`=#{measuringPointType}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!-- 分页根据，根据测点id or 测点名称搜索-->
+    <select id="selectByIdsOrNamePageList" resultMap="map" >
+            SELECT ID,MEASURING_POINT,DATA_UNIT FROM `device_measuring_point`  WHERE DEL_FLAG = '0' AND ID IN(${ids})
+        <if test="measuringPoint != null and measuringPoint != ''">
+            AND `MEASURING_POINT`=#{measuringPoint}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!-- 查询不在ids里面的测点-->
+    <select id="selectByNotIds" resultMap="deviceMeasuringPointMap" parameterType="String">
+        SELECT ID,MEASURING_POINT,DATA_UNIT FROM `device_measuring_point`  WHERE DEL_FLAG = '0'
+        <if test="_parameter != null and _parameter != ''">
+            AND id NOT IN(${_parameter})
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <select id="get" resultMap="deviceMeasuringPointMap" parameterType="Integer">
+        SELECT ID,MEASURING_POINT,DATA_UNIT FROM `device_measuring_point`  WHERE id =#{id}
+    </select>
+
+    <select id="getAll"  resultMap="map">
+        SELECT ID,MEASURING_POINT,DATA_UNIT,CODE_NAME FROM  `device_measuring_point`  WHERE DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据测点的代号查询-->
+    <select id="selectByCodeName"  resultMap="deviceMeasuringPointMap" parameterType="String">
+        SELECT ID,MEASURING_POINT,DATA_UNIT,CODE_NAME FROM  `device_measuring_point` WHERE DEL_FLAG = '0' AND CODE_NAME = #{_parameter }
+    </select>
+
+
+</mapper>

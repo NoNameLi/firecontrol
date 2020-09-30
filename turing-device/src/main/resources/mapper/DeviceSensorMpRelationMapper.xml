@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorMpRelationMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceSensorMpRelation" id="deviceSensorMpRelationMap">
+        <result property="id" column="ID"/>
+        <result property="sensorSeriesId" column="SENSOR_SERIES_ID"/>
+        <result property="mpId" column="MP_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+    <!--根据传感器系列的id查询出对应的测点id -->
+    <select id="selectBySensorSeriesId" parameterType="Integer" resultType="Integer">
+        SELECT MP_ID FROM `device_sensor_mp_relation` WHERE `SENSOR_SERIES_ID` = #{sensorSeriesId}
+    </select>
+
+    <!-- 根据测点id删除时，删除相应得关联表-->
+    <delete id="deleteByMPIds" parameterType="Integer">
+        DELETE FROM `device_sensor_mp_relation` WHERE MP_ID = #{mpId}
+    </delete>
+
+    <!-- 根据传感器系列id删除时，删除相应得关联表-->
+    <delete id="deleteBySSIds" parameterType="Integer">
+        DELETE FROM `device_sensor_mp_relation` WHERE SENSOR_SERIES_ID = #{sensorSeriesId}
+    </delete>
+</mapper>

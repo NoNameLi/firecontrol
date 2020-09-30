@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceEarlyWarningMapper" >
+  <resultMap id="deviceEarlyWarning" type="cn.turing.firecontrol.device.entity.DeviceEarlyWarning" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="BUILD_ID" property="buildId" jdbcType="INTEGER" />
+        <result column="EQU_ID" property="equId" jdbcType="INTEGER" />
+        <result column="ALRM_TYPE" property="alrmType" jdbcType="CHAR" />
+        <result column="ALRM_DATE" property="alrmDate" jdbcType="TIMESTAMP" />
+        <result column="HANDLE_FLAG" property="handleFlag" jdbcType="CHAR" />
+        <result column="HANDLE_DATE" property="handleDate" jdbcType="TIMESTAMP" />
+        <result column="HANDLE_PERSON" property="handlePerson" jdbcType="VARCHAR" />
+        <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+        <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+        <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+        <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+        <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+        <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+        <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+        <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+        <result column="ALRM_DATA" property="alrmData" jdbcType="DOUBLE" />
+        <result column="LOG_ID" property="logId" jdbcType="CHAR" />
+        <result column="UNIT" property="unit" jdbcType="VARCHAR" />
+        <result column="B_NAME" property="bName" jdbcType="VARCHAR" />
+        <result column="SENSOR_NO" property="sensorNo" jdbcType="VARCHAR" />
+        <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR" />
+        <result column="FLOOR" property="floor" jdbcType="INTEGER" />
+        <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+        <result column="MEASURING_POINT" property="measuringPoint" jdbcType="VARCHAR" />
+        <result column="CHANNEL_ID" property="channelId" jdbcType="INTEGER" />
+  </resultMap>
+
+
+    <!--  分页搜索预警消息-->
+    <select id="selectPageList"  resultMap="deviceEarlyWarning" parameterType="String">
+        SELECT
+        ID,
+        BUILD_ID,
+        EQU_ID,
+        ALRM_TYPE,
+        ALRM_DATE,
+        HANDLE_FLAG,
+        HANDLE_DATE,
+        HANDLE_PERSON,
+        ALRM_DATA,
+        LOG_ID,
+        UNIT,
+        B_NAME,
+        SENSOR_NO,
+        EQUIPMENT_TYPE,
+        FLOOR,
+        POSITION_DESCRIPTION,
+        MEASURING_POINT,
+        CHANNEL_ID
+        FROM `device_early_warning` WHERE 1=1
+        <if test="_parameter != null and _parameter != ''">
+            AND `HANDLE_FLAG` = #{_parameter }
+        </if>
+        order by CRT_TIME DESC
+    </select>
+</mapper>

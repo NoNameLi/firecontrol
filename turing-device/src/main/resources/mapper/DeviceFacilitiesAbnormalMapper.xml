@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceFacilitiesAbnormalMapper" >
+  <resultMap id="deviceFacilitiesAbnormal" type="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal" >
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="FIRE_COCK_ID" property="fireCockId" jdbcType="INTEGER" />
+        <result column="EQU_ID" property="equId" jdbcType="INTEGER" />
+        <result column="ALRM_TYPE" property="alrmType" jdbcType="CHAR" />
+        <result column="ALRM_DATE" property="alrmDate" jdbcType="TIMESTAMP" />
+        <result column="HANDLE_FLAG" property="handleFlag" jdbcType="CHAR" />
+        <result column="FAULT_FLAG" property="faultFlag" jdbcType="CHAR" />
+        <result column="CONFIR_DATE" property="confirDate" jdbcType="TIMESTAMP" />
+        <result column="HANDLE_DATE" property="handleDate" jdbcType="TIMESTAMP" />
+        <result column="CONFIR_PERSON" property="confirPerson" jdbcType="VARCHAR" />
+        <result column="HANDLE_PERSON" property="handlePerson" jdbcType="VARCHAR" />
+        <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+        <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+        <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+        <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+        <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+        <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+        <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+        <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+        <result column="ALRM_DATA" property="alrmData" jdbcType="DOUBLE" />
+        <result column="LOG_ID" property="logId" jdbcType="CHAR" />
+        <result column="UNIT" property="unit" jdbcType="VARCHAR" />
+        <result column="DATA_UNIT" property="dataUnit" jdbcType="VARCHAR" />
+        <result column="HYDRANT_NAME" property="hydrantName" jdbcType="VARCHAR" />
+        <result column="SENSOR_NO" property="sensorNo" jdbcType="VARCHAR" />
+        <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR" />
+        <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+        <result column="MEASURING_POINT" property="measuringPoint" jdbcType="VARCHAR" />
+        <result column="LEVEL" property="level" jdbcType="VARCHAR" />
+        <result column="CHANNEL_ID" property="channelId" jdbcType="INTEGER" />
+  </resultMap>
+
+      <resultMap id="queryMapTemp" type="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal" >
+            <result column="ALRM_TYPE" property="alrmType"/>
+            <result column="ALRM_DATE" property="alrmDate"/>
+            <result column="HANDLE_FLAG" property="handleFlag"/>
+            <result column="ALRM_DATA" property="alrmData"/>
+            <result column="LOG_ID" property="logId"/>
+            <result column="DATA_UNIT" property="dataUnit"/>
+            <result column="HYDRANT_NAME" property="hydrantName"/>
+            <result column="EQUIPMENT_TYPE" property="equipmentType"/>
+            <result column="POSITION_DESCRIPTION" property="positionDescription"/>
+            <result column="MEASURING_POINT" property="measuringPoint"/>
+            <result column="CHANNEL_ID" property="channelId"/>
+      </resultMap>
+
+      <resultMap id="alrmMap" type="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal" >
+            <result column="ALRM_TYPE" property="alrmType"/>
+            <result column="ALRM_DATE" property="alrmDate"/>
+            <result column="ALRM_DATA" property="alrmData"/>
+            <result column="DATA_UNIT" property="dataUnit"/>
+            <result column="EQUIPMENT_TYPE" property="equipmentType"/>
+            <result column="MEASURING_POINT" property="measuringPoint"/>
+      </resultMap>
+
+      <select id="selectQuery" resultMap="deviceFacilitiesAbnormal" >
+            SELECT
+            FIRE_COCK_ID,
+            ID,
+            HYDRANT_NAME,
+            SENSOR_NO,
+            EQUIPMENT_TYPE,
+            POSITION_DESCRIPTION,
+            MEASURING_POINT,
+            ALRM_TYPE,
+            ALRM_DATA,
+            DATA_UNIT,
+            ALRM_DATE,
+            HANDLE_FLAG,
+            HANDLE_DATE,
+            HANDLE_PERSON,
+            LOG_ID
+            FROM
+            device_facilities_abnormal
+            where 1=1
+            <if test="deviceFacilitiesAbnormal.alrmType != null and deviceFacilitiesAbnormal.alrmType != ''">
+                  AND ALRM_TYPE = #{deviceFacilitiesAbnormal.alrmType}
+            </if>
+            <if test="startDate != null and endDate != null">
+                  AND ALRM_DATE &gt;= #{startDate} AND ALRM_DATE &lt;= #{endDate}
+            </if>
+            <if test="deviceFacilitiesAbnormal.handlePerson != null and deviceFacilitiesAbnormal.handlePerson != ''">
+                  AND HANDLE_PERSON= #{deviceFacilitiesAbnormal.handlePerson}
+            </if>
+            <if test="deviceFacilitiesAbnormal.handleFlag != null and deviceFacilitiesAbnormal.handleFlag != ''">
+                  AND HANDLE_FLAG= #{deviceFacilitiesAbnormal.handleFlag}
+            </if>
+            <if test="deviceFacilitiesAbnormal.hydrantName != null and deviceFacilitiesAbnormal.hydrantName != ''">
+                  AND HYDRANT_NAME LIKE '%${deviceFacilitiesAbnormal.hydrantName}%'
+            </if>
+            <if test="deviceFacilitiesAbnormal.sensorNo != null and deviceFacilitiesAbnormal.sensorNo != ''">
+                  AND SENSOR_NO LIKE '%${deviceFacilitiesAbnormal.sensorNo}%'
+            </if>
+            <if test="deviceFacilitiesAbnormal.equipmentType != null and deviceFacilitiesAbnormal.equipmentType != ''">
+                  AND EQUIPMENT_TYPE= #{deviceFacilitiesAbnormal.equipmentType}
+            </if>
+            <if test="deviceFacilitiesAbnormal.measuringPoint != null and deviceFacilitiesAbnormal.measuringPoint != ''">
+                  AND MEASURING_POINT= #{deviceFacilitiesAbnormal.measuringPoint}
+            </if>
+            <if test="deviceFacilitiesAbnormal.channelId != null and deviceFacilitiesAbnormal.channelId != ''">
+                  AND CHANNEL_ID= #{deviceFacilitiesAbnormal.channelId}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <select id="selectAlrmByHydrantId" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal" resultMap="deviceFacilitiesAbnormal">
+            SELECT * FROM `device_facilities_abnormal` WHERE  DEL_FLAG = '0'
+            <if test="hydrantId != null and hydrantId != ''">
+                  AND `FIRE_COCK_ID` = #{hydrantId}
+            </if>
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND `HANDLE_FLAG` = #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND `CHANNEL_ID` = #{channelId}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <resultMap type="map" id="queryEquIdMapTemp">
+            <result property="id" column="ID"/>
+            <result property="alrmDate" column="ALRM_DATE"/>
+            <result property="alrmType" column="ALRM_TYPE"/>
+            <result property="measuringPoint" column="MEASURING_POINT"/>
+            <result property="confirPerson" column="CONFIR_PERSON"/>
+            <result property="confirDate" column="CONFIR_DATE"/>
+            <result property="handlePerson" column="HANDLE_PERSON"/>
+            <result property="handleDate" column="HANDLE_DATE"/>
+            <result property="alrmData" column="ALRM_DATA"/>
+            <result property="dataUnit" column="DATA_UNIT"/>
+      </resultMap>
+
+      <select id="selectCountByDate" resultType="cn.turing.firecontrol.device.vo.ResultVo" parameterType="java.lang.Integer">
+            SELECT
+            DATE_FORMAT(ALRM_DATE, '%Y-%m-%d') date,
+            count(ID) count
+            FROM
+            device_facilities_abnormal WHERE 1=1
+            AND ALRM_DATE &gt;= #{startDate} AND  ALRM_DATE &lt;= #{endDate}
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+            <if test="hydrantId != null and hydrantId != ''">
+                  AND FIRE_COCK_ID = #{hydrantId}
+            </if>
+            GROUP BY
+            DATE_FORMAT(ALRM_DATE, '%Y-%m-%d')
+      </select>
+
+      <select id="selectCountByHydranNameAndDate" resultType="java.lang.Integer" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal">
+            SELECT COUNT(ID) FROM `device_facilities_abnormal` where ALRM_DATE &gt;=  #{startDate} AND ALRM_DATE &lt;= #{endDate}
+            <if test="hydranName != null and hydranName != ''">
+                  AND HYDRANT_NAME = #{hydranName}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+      </select>
+
+      <select id="selectByYear" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal" resultType="cn.turing.firecontrol.device.vo.ResultVo">
+            SELECT
+            YEAR (ALRM_DATE) AS year,
+            MONTH (ALRM_DATE) AS month,
+            count(*) AS count
+            FROM
+            device_facilities_abnormal
+            WHERE YEAR (ALRM_DATE) = #{year}
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+            GROUP BY YEAR (ALRM_DATE),MONTH (ALRM_DATE)
+      </select>
+
+      <select id="selectAlrm" resultMap="deviceFacilitiesAbnormal" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal">
+            SELECT	* FROM `device_facilities_abnormal` WHERE 1=1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG = #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <select id="getCountByHandleFlag" resultType="Integer" >
+            SELECT COUNT(ID) FROM device_facilities_abnormal WHERE
+            HANDLE_DATE &lt;= #{endDate}
+            AND HANDLE_DATE &gt;= #{startDate}
+            <if test="handleFlag != null and handleFlag != null">
+                  AND HANDLE_FLAG = #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != null">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+      </select>
+
+      <select id="getCountByToday" resultType="Integer" >
+            SELECT COUNT(ID) FROM device_facilities_abnormal WHERE
+            ALRM_DATE &lt;= #{endDate}
+            AND ALRM_DATE &gt;= #{startDate}
+            <if test="channelId != null and channelId != null">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+      </select>
+
+      <!-- 实时数据历史纪录-->
+      <select id="selectByEquIdResultMP" parameterType="java.lang.Long" resultMap="queryEquIdMapTemp">
+            SELECT ID,`MEASURING_POINT`,`ALRM_TYPE`,`ALRM_DATE`,`CONFIR_PERSON`,`CONFIR_DATE`,`HANDLE_PERSON`,`HANDLE_DATE`,`ALRM_DATA`,DATA_UNIT
+            FROM `device_facilities_abnormal`
+            WHERE EQU_ID = #{equId}
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG = #{handleFlag}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <select id="selectAlrmType" resultType="String" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal">
+            SELECT ALRM_TYPE  FROM device_facilities_abnormal WHERE 1=1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG = #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+            GROUP BY ALRM_TYPE
+      </select>
+
+      <select id="selectMeasuringPoint" resultType="String" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesAbnormal">
+            SELECT MEASURING_POINT  FROM device_facilities_abnormal WHERE 1=1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG = #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID = #{channelId}
+            </if>
+            GROUP BY MEASURING_POINT
+      </select>
+
+      <select id="selectCountByType" resultType="Integer" >
+        SELECT COUNT(ID) FROM `device_facilities_abnormal` where ALRM_DATE &gt;=  #{startDate}
+        AND ALRM_DATE &lt;= #{endDate}
+        AND ALRM_TYPE = #{alrmType}
+    </select>
+
+      <select id="selectByHandelFlagAndAlrm" resultMap="queryMapTemp" >
+            SELECT
+            ID,
+            ALRM_TYPE,
+            ALRM_DATE,
+            DATA_UNIT,
+            ALRM_DATA,
+            MEASURING_POINT,
+            HYDRANT_NAME,
+            EQUIPMENT_TYPE,
+            POSITION_DESCRIPTION,
+            LOG_ID
+            FROM
+            device_facilities_abnormal
+            WHERE 1= 1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG= #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID= #{channelId}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <select id="selectByHydrantId" resultMap="alrmMap" >
+            SELECT
+            ALRM_TYPE,
+            ALRM_DATE,
+            DATA_UNIT,
+            ALRM_DATA,
+            MEASURING_POINT,
+            EQUIPMENT_TYPE
+            FROM
+            device_facilities_abnormal
+            WHERE 1= 1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG= #{handleFlag}
+            </if>
+            <if test="id != null and id != ''">
+                  AND FIRE_COCK_ID= #{id}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID= #{channelId}
+            </if>
+            order by ALRM_DATE DESC
+      </select>
+
+      <select id="selectAllAlrm" resultType="cn.turing.firecontrol.device.vo.AlrmVo" parameterType="String">
+             SELECT * FROM (
+		       SELECT
+		       null id,
+			   a.CHANNEL_ID channelId,
+			   a.B_NAME name,
+			   a.FLOOR,
+			   a.EQUIPMENT_TYPE equipmentType,
+			   a.MEASURING_POINT measuringPoint,
+			   a.ALRM_TYPE alrmType,
+			   a.ALRM_DATE alrmDate,
+			   a.LOG_ID logId,
+			   a.TENANT_ID,
+               a.CRT_USER_ID
+		    FROM
+			device_abnormal a
+		    WHERE a.HANDLE_FLAG = #{_parameter}
+		    UNION ALL
+			SELECT
+			    f.FIRE_COCK_ID id,
+				f.CHANNEL_ID channelId,
+				f.HYDRANT_NAME name,
+				NULL,
+				f.EQUIPMENT_TYPE equipmentType,
+				f.MEASURING_POINT measuringPoint,
+				f.ALRM_TYPE alrmType,
+				f.ALRM_DATE alrmDate,
+				f.LOG_ID logId,
+			    f.TENANT_ID,
+                f.CRT_USER_ID
+			FROM
+				device_facilities_abnormal f
+			WHERE
+				f.HANDLE_FLAG = #{_parameter}
+			) abnormal ORDER BY alrmDate DESC
+      </select>
+
+      <select id="selectCountByChannelId" resultType="Integer" >
+            SELECT count(ID) FROM device_facilities_abnormal
+            WHERE 1= 1
+            <if test="handleFlag != null and handleFlag != ''">
+                  AND HANDLE_FLAG= #{handleFlag}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                  AND CHANNEL_ID= #{channelId}
+            </if>
+      </select>
+</mapper>

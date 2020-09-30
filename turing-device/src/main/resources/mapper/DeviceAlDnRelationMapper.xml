@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceAlDnRelationMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceAlDnRelation" id="deviceAlDnRelationMap">
+        <result property="id" column="ID"/>
+        <result property="alId" column="AL_ID"/>
+        <result property="dnId" column="DN_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+    </resultMap>
+
+    <!--根据报警等级id查询出通知方式的id -->
+    <select id="selectByAlarmLevelId" parameterType="Integer" resultType="Integer">
+        SELECT DN_ID FROM `device_al_dn_relation` WHERE `AL_ID` = #{alarmLevelId}
+        <if test="tenantId != null and tenantId != ''">
+            AND `TENANT_ID`=#{tenantId}
+        </if>
+    </select>
+
+
+</mapper>

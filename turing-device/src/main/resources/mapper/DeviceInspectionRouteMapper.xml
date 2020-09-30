@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceInspectionRouteMapper" >
+      <resultMap id="deviceInspectionRouteMap" type="cn.turing.firecontrol.device.entity.DeviceInspectionRoute" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+             <id column="ID" property="id" jdbcType="INTEGER" />
+            <result column="ROUTE_NAME" property="routeName" jdbcType="VARCHAR" />
+            <result column="LABEL_COUNT" property="labelCount" jdbcType="VARCHAR" />
+            <result column="ROUTE_FLAG" property="routeFlag" jdbcType="CHAR" />
+            <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+            <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+            <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+            <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+            <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+            <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+            <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+            <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+            <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+      </resultMap>
+
+      <resultMap id="map" type="Map" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="ROUTE_NAME" property="routeName" jdbcType="VARCHAR" />
+        <result column="LABEL_COUNT" property="labelCount" jdbcType="VARCHAR" />
+        <result column="ROUTE_FLAG" property="routeFlag" jdbcType="CHAR" />
+        <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+        <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+        <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+        <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+        <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+        <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+        <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+        <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+      </resultMap>
+
+
+
+      <select id="selectPageList"  resultMap="map" >
+          SELECT `ID`,`ROUTE_NAME`,`LABEL_COUNT` FROM `device_inspection_route` WHERE DEL_FLAG = '0'
+            <if test="routeName != null and routeName != ''">
+              AND `ROUTE_NAME` like '%${routeName}%'
+            </if>
+          <if test="routeFlag != null and routeFlag != ''">
+            AND `ROUTE_FLAG` = #{routeFlag}
+          </if>
+          order by CRT_TIME DESC
+      </select>
+
+      <select id="selectByCount"  resultType="Integer" >
+          SELECT COUNT(`ID`) FROM `device_inspection_route` WHERE DEL_FLAG = '0'
+            <if test="routeName != null and routeName != ''">
+              AND `ROUTE_NAME` = #{routeName}
+            </if>
+            <if test="routeFlag != null and routeFlag != ''">
+              AND `ROUTE_FLAG` = #{routeFlag}
+            </if>
+            order by CRT_TIME DESC
+      </select>
+
+    <select id="getNotIds" resultMap="map"  >
+        SELECT `ID`,`ROUTE_NAME` FROM `device_inspection_route` WHERE DEL_FLAG = '0'
+        <if test="ids != null and ids != ''">
+            AND ID NOT IN (${ids})
+        </if>
+        <if test="id != null and id != ''">
+            AND ID = #{id}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <select id="getById" resultMap="deviceInspectionRouteMap">
+        SELECT * FROM `device_inspection_route` WHERE DEL_FLAG = '0' AND ID = #{_parameter}
+    </select>
+
+</mapper>

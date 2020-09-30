@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceFacilitiesTypeMapper" >
+  <resultMap id="deviceFacilitiesTypeMap" type="cn.turing.firecontrol.device.entity.DeviceFacilitiesType" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR" />
+    <result column="CHECK_ITEM_COUNT" property="checkItemCount" jdbcType="VARCHAR" />
+    <result column="TEST_ITEM_COUNT" property="testItemCount" jdbcType="VARCHAR" />
+    <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+    <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+    <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+    <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+    <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+    <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <resultMap id="map" type="cn.turing.firecontrol.device.entity.DeviceFacilitiesType" >
+        <id column="ID" property="id" jdbcType="INTEGER" />
+        <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR" />
+        <result column="CHECK_ITEM_COUNT" property="checkItemCount" jdbcType="VARCHAR" />
+        <result column="TEST_ITEM_COUNT" property="testItemCount" jdbcType="VARCHAR" />
+    </resultMap>
+
+  <!--   搜索设施类型-->
+  <select id="selectByType"  resultMap="deviceFacilitiesTypeMap" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesType">
+    SELECT ID,EQUIPMENT_TYPE FROM `device_facilities_type`  WHERE DEL_FLAG = '0'
+    <if test="equipmentType != null and equipmentType != ''">
+      AND `equipmentType` like '%${equipmentType}%'
+    </if>
+    order by CRT_TIME DESC
+  </select>
+
+      <select id="selectPageList"  resultMap="map" parameterType="String">
+        SELECT ID,`EQUIPMENT_TYPE`,`CHECK_ITEM_COUNT`,`TEST_ITEM_COUNT` FROM `device_facilities_type` WHERE `DEL_FLAG`='0'
+            <if test="equipmentType != null and equipmentType != ''">
+              AND `EQUIPMENT_TYPE` like '%${equipmentType}%'
+            </if>
+            order by CRT_TIME DESC
+      </select>
+
+    <select id="selectByCount"  resultType="Integer" parameterType="String">
+        SELECT COUNT(ID) FROM `device_facilities_type` WHERE `DEL_FLAG`='0'
+        <if test="_parameter != null and _parameter != ''">
+            AND `EQUIPMENT_TYPE` = #{_parameter}
+        </if>
+    </select>
+
+    <select id="getAllTypeId"  resultType="Integer" parameterType="String">
+        SELECT ID FROM `device_facilities_type` WHERE `DEL_FLAG`='0'
+    </select>
+
+    <select id="getByType"  resultType="String">
+        SELECT DISTINCT EQUIPMENT_TYPE FROM `device_facilities_type` WHERE `DEL_FLAG`='0'
+    </select>
+
+    <select id="getById" resultMap="deviceFacilitiesTypeMap" parameterType="cn.turing.firecontrol.device.entity.DeviceFacilitiesType">
+        SELECT * FROM device_facilities_type WHERE DEL_FLAG='0' AND `ID` = #{_parameter}
+    </select>
+</mapper>

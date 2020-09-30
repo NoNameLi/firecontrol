@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceIndoorRecordInspectionResultsMapper">
+    <resultMap id="deviceIndoorRecordInspectionResultsMap"
+               type="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" property="id" jdbcType="INTEGER"/>
+        <result column="UPLOAD_PICTURE_IDS" property="uploadPictureIds" jdbcType="INTEGER"/>
+        <result column="LABEL_ID" property="labelId" jdbcType="INTEGER"/>
+        <result column="LEAK_FLAG" property="leakFlag" jdbcType="CHAR"/>
+        <result column="B_NAME" property="bName" jdbcType="VARCHAR"/>
+        <result column="FLOOR" property="floor" jdbcType="INTEGER"/>
+        <result column="FACILITIES_NO" property="facilitiesNo" jdbcType="VARCHAR"/>
+        <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR"/>
+        <result column="EQUIPMENT_STATUS" property="equipmentStatus" jdbcType="VARCHAR"/>
+        <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR"/>
+        <result column="INSPECTION_RESULT" property="inspectionResult" jdbcType="CHAR"/>
+        <result column="PROBLEM_DESCRIPTION" property="problemDescription" jdbcType="VARCHAR"/>
+        <result column="HANDLING" property="handling" jdbcType="CHAR"/>
+        <result column="INSPECTION_PERSON" property="inspectionPerson" jdbcType="VARCHAR"/>
+        <result column="INSPECTION_DATE" property="inspectionDate" jdbcType="TIMESTAMP"/>
+        <result column="MOBILE_PHONE" property="mobilePhone" jdbcType="VARCHAR"/>
+        <result column="PLANNED_COMPLETION_TIME" property="plannedCompletionTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR"/>
+        <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR"/>
+        <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR"/>
+        <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR"/>
+        <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR"/>
+        <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="DEPART_ID" property="departId" jdbcType="VARCHAR"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="TASK_ID" property="taskId" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <resultMap id="map" type="Map">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" property="id" jdbcType="INTEGER"/>
+        <result column="UPLOAD_PICTURE_IDS" property="uploadPictureIds" jdbcType="INTEGER"/>
+        <result column="LABEL_ID" property="labelId" jdbcType="INTEGER"/>
+        <result column="LEAK_FLAG" property="leakFlag" jdbcType="CHAR"/>
+        <result column="B_NAME" property="bName" jdbcType="VARCHAR"/>
+        <result column="FLOOR" property="floor" jdbcType="INTEGER"/>
+        <result column="FACILITIES_NO" property="facilitiesNo" jdbcType="VARCHAR"/>
+        <result column="EQUIPMENT_TYPE" property="equipmentType" jdbcType="VARCHAR"/>
+        <result column="EQUIPMENT_STATUS" property="equipmentStatus" jdbcType="VARCHAR"/>
+        <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR"/>
+        <result column="INSPECTION_RESULT" property="inspectionResult" jdbcType="CHAR"/>
+        <result column="PROBLEM_DESCRIPTION" property="problemDescription" jdbcType="VARCHAR"/>
+        <result column="HANDLING" property="handling" jdbcType="CHAR"/>
+        <result column="INSPECTION_PERSON" property="inspectionPerson" jdbcType="VARCHAR"/>
+        <result column="INSPECTION_DATE" property="inspectionDate" jdbcType="TIMESTAMP"/>
+        <result column="MOBILE_PHONE" property="mobilePhone" jdbcType="VARCHAR"/>
+        <result column="PLANNED_COMPLETION_TIME" property="plannedCompletionTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR"/>
+        <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR"/>
+        <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR"/>
+        <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR"/>
+        <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR"/>
+        <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="DEPART_ID" property="departId" jdbcType="VARCHAR"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="TASK_ID" property="taskId" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="selectByLabelId" resultMap="deviceIndoorRecordInspectionResultsMap"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT * FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="labelId != null and labelId != ''">
+            AND LABEL_ID=#{labelId}
+        </if>
+        AND month(INSPECTION_DATE)=#{month} and year(INSPECTION_DATE) = #{year} ORDER BY CRT_TIME DESC
+    </select>
+
+
+    <select id="selectQuery" resultMap="map"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT * FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="entity.inspectionResult != null and entity.inspectionResult != '-1'">
+            AND INSPECTION_RESULT=#{entity.inspectionResult}
+        </if>
+        <if test="entity.facilitiesNo != null and entity.facilitiesNo != ''">
+            AND FACILITIES_NO LIKE '%${entity.facilitiesNo}%'
+        </if>
+        <if test="entity.equipmentType != null and entity.equipmentType != '' and entity.equipmentType != '全部'">
+            AND EQUIPMENT_TYPE=#{entity.equipmentType}
+        </if>
+        <if test="entity.positionDescription != null and entity.positionDescription != ''">
+            AND POSITION_DESCRIPTION=#{entity.positionDescription}
+        </if>
+        <if test="entity.mobilePhone != null and entity.mobilePhone != ''">
+            AND MOBILE_PHONE=#{entity.mobilePhone}
+        </if>
+        <if test="entity.floor != null and entity.floor != ''">
+            AND FLOOR=#{entity.floor}
+        </if>
+        <if test="entity.inspectionPerson != null and entity.inspectionPerson != ''">
+            AND INSPECTION_PERSON = #{entity.inspectionPerson}
+        </if>
+        <if test="entity.bName != null and entity.bName != ''">
+            AND B_NAME=#{entity.bName}
+        </if>
+        <if test="inspectionStartDate != null and inspectionStartDate != ''">
+            AND INSPECTION_DATE >= #{inspectionStartDate}
+        </if>
+        <if test="inspectionEndDate != null and inspectionEndDate != ''">
+            AND INSPECTION_DATE &lt;= #{inspectionEndDate}
+        </if>
+        <if test="plannedCompletionStartTime != null and plannedCompletionStartTime != ''">
+            AND PLANNED_COMPLETION_TIME >= #{plannedCompletionStartTime}
+        </if>
+        <if test="plannedCompletionEndTime != null and plannedCompletionEndTime != ''">
+            AND PLANNED_COMPLETION_TIME &lt;= #{plannedCompletionEndTime}
+        </if>
+        <if test="entity.leakFlag != null and entity.leakFlag != ''">
+            AND LEAK_FLAG = #{entity.leakFlag}
+        </if>
+        ORDER BY CRT_TIME DESC
+    </select>
+
+    <select id="selectExcel" resultMap="deviceIndoorRecordInspectionResultsMap"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT * FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="entity.inspectionResult != null and entity.inspectionResult != '-1'">
+            AND INSPECTION_RESULT=#{entity.inspectionResult}
+        </if>
+        <if test="entity.facilitiesNo != null and entity.facilitiesNo != ''">
+            AND FACILITIES_NO LIKE '%${entity.facilitiesNo}%'
+        </if>
+        <if test="entity.equipmentType != null and entity.equipmentType != '' and entity.equipmentType != '全部'">
+            AND EQUIPMENT_TYPE=#{entity.equipmentType}
+        </if>
+        <if test="entity.positionDescription != null and entity.positionDescription != ''">
+            AND POSITION_DESCRIPTION=#{entity.positionDescription}
+        </if>
+        <if test="entity.mobilePhone != null and entity.mobilePhone != ''">
+            AND MOBILE_PHONE=#{entity.mobilePhone}
+        </if>
+        <if test="entity.floor != null and entity.floor != ''">
+            AND FLOOR=#{entity.floor}
+        </if>
+
+        <if test="entity.inspectionPerson != null and entity.inspectionPerson != ''">
+            AND INSPECTION_PERSON = #{entity.inspectionPerson}
+        </if>
+        <if test="entity.bName != null and entity.bName != ''">
+            AND B_NAME=#{entity.bName}
+        </if>
+        <if test="inspectionStartDate != null and inspectionStartDate != ''">
+            AND INSPECTION_DATE >= #{inspectionStartDate}
+        </if>
+        <if test="inspectionEndDate != null and inspectionEndDate != ''">
+            AND INSPECTION_DATE &lt;= #{inspectionEndDate}
+        </if>
+        <if test="plannedCompletionStartTime != null and plannedCompletionStartTime != ''">
+            AND PLANNED_COMPLETION_TIME >= #{plannedCompletionStartTime}
+        </if>
+        <if test="plannedCompletionEndTime != null and plannedCompletionEndTime != ''">
+            AND PLANNED_COMPLETION_TIME &lt;= #{plannedCompletionEndTime}
+        </if>
+        <if test="entity.leakFlag != null and entity.leakFlag != ''">
+            AND LEAK_FLAG = #{entity.leakFlag}
+        </if>
+        ORDER BY CRT_TIME DESC
+    </select>
+
+    <select id="selectByFacilitiesNo" resultMap="deviceIndoorRecordInspectionResultsMap"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT * FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="facilitiesNo != null and facilitiesNo != ''">
+            AND FACILITIES_NO=#{facilitiesNo}
+        </if>
+        order by CRT_TIME DESC LIMIT 1
+    </select>
+
+    <select id="selectByTaskId" resultMap="deviceIndoorRecordInspectionResultsMap"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT * FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="taskId != null and taskId != ''">
+            AND TASK_ID=#{taskId}
+        </if>
+        <if test="labelId != null and labelId != ''">
+            AND LABEL_ID=#{labelId}
+        </if>
+    </select>
+
+    <select id="getSelected" resultType="String">
+        SELECT DISTINCT `EQUIPMENT_TYPE` FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="leakFlag != null and leakFlag != ''">
+            AND LEAK_FLAG=#{leakFlag}
+        </if>
+    </select>
+
+    <select id="selectByTaskIdAndlabalId" resultType="java.lang.Integer"
+            parameterType="cn.turing.firecontrol.device.entity.DeviceIndoorRecordInspectionResults">
+        SELECT COUNT(ID) FROM device_indoor_record_inspection_results where DEL_FLAG='0'
+        <if test="taskId != null and taskId != ''">
+            AND TASK_ID=#{taskId}
+        </if>
+        <if test="ids != null and ids != ''">
+            AND LABEL_ID IN (${ids})
+        </if>
+        <if test="leakFlag != null and leakFlag != ''">
+            AND LEAK_FLAG=#{leakFlag}
+        </if>
+        <if test="result != null and result != ''">
+            AND INSPECTION_RESULT=#{result}
+        </if>
+    </select>
+
+    <select id="selectStatusCount" resultType="cn.turing.firecontrol.device.dto.TypeNumDto">
+     SELECT rs.INSPECTION_RESULT as type,count(1) as num FROM
+       (SELECT INSPECTION_RESULT ,crt_user_id,tenant_id from device_indoor_record_inspection_results WHERE DEL_FLAG='0' and INSPECTION_RESULT is not null
+       union all
+       SELECT INSPECTION_RESULT ,crt_user_id,tenant_id from device_outdoor_record_inspection_results WHERE DEL_FLAG='0' and INSPECTION_RESULT is not null) rs
+       GROUP BY rs.INSPECTION_RESULT
+    </select>
+
+    <select id="selectResultTrend" resultType="cn.turing.firecontrol.device.vo.DateNumVO">
+   SELECT temp.date_value,IFNULL(a.num,0) as num from
+   (SELECT curdate() as date_value
+		union all
+		SELECT date_sub(curdate(), interval 1 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 2 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 3 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 4 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 5 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 6 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 7 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 8 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 9 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 10 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 11 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 12 day) as date_value
+		union all
+		SELECT date_sub(curdate(), interval 13 day) as date_value) temp
+LEFT JOIN (SELECT date_time,count(1) as num from (SELECT DATE(INSPECTION_DATE) as date_time,TENANT_ID,CRT_USER_ID from device_indoor_record_inspection_results where
+DATE(INSPECTION_DATE) &gt;= date_sub(curdate(), interval 13 day) and INSPECTION_RESULT=#{inspectionResult} and tenant_id=#{tenantId}
+UNION ALL
+SELECT DATE(INSPECTION_DATE) as date_time,TENANT_ID,CRT_USER_ID from device_outdoor_record_inspection_results where
+DATE(INSPECTION_DATE) &gt;= date_sub(curdate(), interval 13 day) and INSPECTION_RESULT=#{inspectionResult} and tenant_id=#{tenantId}) rs
+ GROUP BY rs.date_time) a on  temp.date_value=a.date_time ORDER BY temp.date_value asc
+    </select>
+
+    <select id="selectAbnormalList" resultType="cn.turing.firecontrol.device.vo.InspectionResultsVO">
+    SELECT * from (SELECT EQUIPMENT_TYPE,POSITION_DESCRIPTION,INSPECTION_PERSON,INSPECTION_DATE,PROBLEM_DESCRIPTION from
+device_indoor_record_inspection_results where  DATE(INSPECTION_DATE) >= date_sub(curdate(), interval 13 day) and INSPECTION_RESULT='1' and TENANT_ID=#{tenantId}
+UNION all
+SELECT EQUIPMENT_TYPE,POSITION_DESCRIPTION,INSPECTION_PERSON,INSPECTION_DATE,PROBLEM_DESCRIPTION from
+device_outdoor_record_inspection_results where  DATE(INSPECTION_DATE) >= date_sub(curdate(), interval 13 day) and INSPECTION_RESULT='1' and TENANT_ID=#{tenantId}) rs ORDER BY rs.INSPECTION_DATE desc
+    </select>
+
+    <select id="checkInspection" resultType="Integer" >
+    SELECT count(1) from device_indoor_record_inspection_results a LEFT JOIN device_inspection_tasks b on a.TASK_ID=b.id
+    where  a.INSPECTION_DATE &gt;=#{startDate} and a.INSPECTION_DATE &lt;=#{endDate}  and b.INSPECTION_ROUTE_ID=#{routeId} and a.LABEL_ID=#{labelId} and a.LEAK_FLAG='0'
+  </select>
+
+
+</mapper>

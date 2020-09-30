@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceSensorTypeMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.turing.firecontrol.device.entity.DeviceSensorType" id="deviceSensorTypeMap">
+        <result property="id" column="ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="manufacturer" column="MANUFACTURER"/>
+        <result property="model" column="MODEL"/>
+        <result property="dataUnit" column="DATA_UNIT"/>
+        <result property="dataAcquisitionCycleUnit" column="DATA_ACQUISITION_CYCLE_UNIT"/>
+        <result property="dataAcquisitionCycleValue" column="DATA_ACQUISITION_CYCLE_VALUE"/>
+        <result property="dataAcquisitionCycleSecond" column="DATA_ACQUISITION_CYCLE_SECOND"/>
+        <result property="acquisitionDelayTimeUnit" column="ACQUISITION_DELAY_TIME_UNIT"/>
+        <result property="acquisitionDelayTimeValue" column="ACQUISITION_DELAY_TIME_VALUE"/>
+        <result property="acquisitionDelayTimeSecond" column="ACQUISITION_DELAY_TIME_SECOND"/>
+        <result property="firstLevelAlarmMin" column="FIRST_LEVEL_ALARM_MIN"/>
+        <result property="firstLevelAlarmMax" column="FIRST_LEVEL_ALARM_MAX"/>
+        <result property="twoLevelAlarmMin" column="TWO_LEVEL_ALARM_MIN"/>
+        <result property="twoLevelAlarmMax" column="TWO_LEVEL_ALARM_MAX"/>
+        <result property="maintenanceCycleUnit" column="MAINTENANCE_CYCLE_UNIT"/>
+        <result property="maintenanceCycleValue" column="MAINTENANCE_CYCLE_VALUE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="crtUserName" column="CRT_USER_NAME"/>
+        <result property="crtUserId" column="CRT_USER_ID"/>
+        <result property="crtTime" column="CRT_TIME"/>
+        <result property="updUserName" column="UPD_USER_NAME"/>
+        <result property="updUserId" column="UPD_USER_ID"/>
+        <result property="updTime" column="UPD_TIME"/>
+        <result property="departId" column="DEPART_ID"/>
+        <result property="tenantId" column="TENANT_ID"/>
+        <result property="channelId" column="CHANNEL_ID"/>
+        <result property="manufacturerId" column="MANUFACTURER_ID"/>
+    </resultMap>
+
+
+    <resultMap type="Map" id="map">
+        <result property="id" column="ID"/>
+        <result property="equipmentType" column="EQUIPMENT_TYPE"/>
+        <result property="manufacturer" column="MANUFACTURER"/>
+        <result property="model" column="MODEL"/>
+        <result property="dataAcquisitionCycleUnit" column="DATA_ACQUISITION_CYCLE_UNIT"/>
+        <result property="dataAcquisitionCycleValue" column="DATA_ACQUISITION_CYCLE_VALUE"/>
+        <result property="dataAcquisitionCycleSecond" column="DATA_ACQUISITION_CYCLE_SECOND"/>
+        <result property="acquisitionDelayTimeUnit" column="ACQUISITION_DELAY_TIME_UNIT"/>
+        <result property="acquisitionDelayTimeValue" column="ACQUISITION_DELAY_TIME_VALUE"/>
+        <result property="acquisitionDelayTimeSecond" column="ACQUISITION_DELAY_TIME_SECOND"/>
+        <result property="maintenanceCycleUnit" column="MAINTENANCE_CYCLE_UNIT"/>
+        <result property="maintenanceCycleValue" column="MAINTENANCE_CYCLE_VALUE"/>
+    </resultMap>
+
+    <resultMap type="Map" id="addMap">
+        <result property="id" column="MANUFACTURER_ID"/>
+        <result property="equipmentType" column="SENSOR_MANUFACTURER"/>
+    </resultMap>
+
+    <!--根据传感器系列设备的的id查询出有多少站点使用了改传感器，返回子站点的id-->
+    <select id="selectBySensorSeriesIdResultTenantId" parameterType="Integer" resultType="String">
+          SELECT DISTINCT TENANT_ID FROM `device_sensor_type` WHERE DEL_FLAG = '0' AND  EQUIPMENT_TYPE =  (SELECT SENSOR_TYPE FROM `device_sensor_series` WHERE id = #{sensorSeriesId})
+    </select>
+
+    <!-- 根据测点，绑定的传感器系列，查询多少人使用了改传感器，返回子站点的id-->
+    <select id="selectByMeasuringPointIdResultTenantID" parameterType="Integer" resultType="String">
+         SELECT DISTINCT TENANT_ID FROM `device_sensor_type` WHERE  DEL_FLAG = '0' AND  ID IN (  SELECT SENSOR_TYPE_ID FROM `device_sensor_series` WHERE ID IN ( SELECT SENSOR_SERIES_ID FROM `device_sensor_mp_relation` WHERE MP_ID = #{measuringPointId}))
+    </select>
+
+    <!-- 根据传感器厂商绑定的传感器，查询多少人使用了改厂商的传感器，返回子站点的id-->
+    <select id="selectBySensorManufacturerIdResultTenantID" parameterType="Integer" resultType="String">
+         SELECT DISTINCT TENANT_ID FROM `device_sensor_type` WHERE  DEL_FLAG = '0' AND  MANUFACTURER_ID IN (  SELECT ID FROM `device_sensor_manufacturer` WHERE ID=#{manufacturerId})
+    </select>
+
+
+
+    <!-- 分页查询  精确搜索厂商、传感器系列、型号-->
+    <select id="selectPageList"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType">
+        SELECT ID,MANUFACTURER,EQUIPMENT_TYPE,MODEL FROM `device_sensor_type`  WHERE  DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != '' and manufacturer != '全部'">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+   <!-- <select id="selectPageList"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType">
+        SELECT
+        b.`ID` ID,
+        c.`SENSOR_MANUFACTURER` SENSOR_MANUFACTURER,
+        b.`EQUIPMENT_TYPE` EQUIPMENT_TYPE,
+        b.`MODEL` MODEL,
+        b.`CHANNEL_ID` CHANNEL_ID,
+        a.`ID` SERIES_ID,
+        a.`COLOR` COLOR
+        FROM `device_sensor_series` a LEFT JOIN `device_sensor_type` b ON a.SENSOR_TYPE_ID = b.id LEFT JOIN `device_sensor_manufacturer` c ON b.`MANUFACTURER_ID` = c.`ID`  WHERE  a.DEL_FLAG = '0'
+        <if test="channelId != null and channelId >0">
+            AND  b.`CHANNEL_ID` = #{channelId}
+        </if>
+        <if test="manufacturer != null and manufacturer !=''">
+            AND b.`MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `b.MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != '' and equipmentType != '全部'">
+            AND `b.EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+        order by a.CRT_TIME DESC
+    </select>-->
+
+    <!-- 根据厂商、类型、型号查询-->
+    <select id="selectByType"  resultMap="deviceSensorTypeMap" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType">
+        SELECT * FROM `device_sensor_type`  WHERE DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+        order by CRT_TIME DESC
+    </select>
+
+    <!-- 获取所有的厂商-->
+    <select id="getManufacturer" resultType="String" >
+        SELECT DISTINCT MANUFACTURER FROM  `device_sensor_type` WHERE DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据厂商获取所有的系列-->
+    <select id="getEquipmentTypeByManufacturer" resultType="String" parameterType="String" >
+        SELECT DISTINCT EQUIPMENT_TYPE FROM  `device_sensor_type` WHERE DEL_FLAG = '0' AND MANUFACTURER =#{_parameter }
+    </select>
+
+    <!-- 根据厂商系列获取所有的类型-->
+    <select id="getModelByManufacturerAndType" resultType="String" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType" >
+        SELECT DISTINCT MODEL FROM  `device_sensor_type` WHERE  DEL_FLAG = '0' AND MANUFACTURER =#{manufacturer} and EQUIPMENT_TYPE=#{equipmentType}
+    </select>
+
+    <!-- 获取所有的系列-->
+    <select id="getEquipmentType" resultType="String" >
+        SELECT DISTINCT EQUIPMENT_TYPE FROM  `device_sensor_type` WHERE DEL_FLAG = '0'
+    </select>
+
+    <select id="getById" resultMap="deviceSensorTypeMap" parameterType="Integer">
+        SELECT * FROM  `device_sensor_type` where ID= #{id}
+    </select>
+
+    <!-- 查询全部-->
+    <select id="getAll" resultMap="deviceSensorTypeMap">
+        SELECT * FROM `device_sensor_type` WHERE DEL_FLAG = '0'
+    </select>
+
+
+    <!-- 已添加的厂商-->
+    <select id="getAddManufacturer" resultMap="addMap">
+        SELECT DISTINCT a.`MANUFACTURER_ID`,b.`SENSOR_MANUFACTURER` FROM `device_sensor_type` a LEFT JOIN `device_sensor_manufacturer` b ON a.`MANUFACTURER_ID` = b.`ID`
+    </select>
+
+
+    <update id="updateSensor" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType">
+        UPDATE `device_sensor_type`  SET MANUFACTURER = #{manufacturer} WHERE `MANUFACTURER_ID` = #{manufacturerId}
+    </update>
+
+
+    <!-- 获取当前栏目所有的厂商-->
+    <select id="getManufacturerChannelId" resultType="String" parameterType="Integer">
+        SELECT DISTINCT MANUFACTURER FROM  `device_sensor_type` WHERE DEL_FLAG = '0'
+        <if test="_parameter!=null">
+            AND CHANNEL_ID =#{_parameter }
+        </if>
+    </select>
+
+    <!-- 根据当前栏目厂商获取所有的系列-->
+    <select id="getEquipmentTypeByManufacturerChannelId" resultType="String" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType" >
+        SELECT DISTINCT EQUIPMENT_TYPE FROM  `device_sensor_type` WHERE DEL_FLAG = '0' AND MANUFACTURER =#{manufacturer }
+        <if test="channelId!=null">
+            AND CHANNEL_ID =#{channelId }
+        </if>
+    </select>
+
+    <!-- 根据当前栏目厂商系列获取所有的类型-->
+    <select id="getModelByManufacturerAndTypeChannelId" resultType="String" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType" >
+        SELECT DISTINCT MODEL FROM  `device_sensor_type` WHERE  DEL_FLAG = '0' AND MANUFACTURER =#{manufacturer} and EQUIPMENT_TYPE=#{equipmentType}
+        <if test="channelId!=null">
+            AND CHANNEL_ID =#{channelId }
+        </if>
+    </select>
+
+    <!-- 获取已经添加的栏目的id-->
+    <select id="getAddChannelId" resultType="Integer">
+          SELECT DISTINCT `CHANNEL_ID` FROM `device_sensor_type` WHERE `DEL_FLAG` = '0'
+    </select>
+
+    <!-- 获取当前栏目所有的id-->
+    <select id="selectByChannelId" resultType="Integer" parameterType="Integer">
+        SELECT ID FROM  `device_sensor_type` WHERE DEL_FLAG = '0' AND CHANNEL_ID =#{_parameter }
+    </select>
+
+    <!-- 判断所属系统-->
+    <select id="selectResultChannel" resultType="Integer" parameterType="cn.turing.firecontrol.device.entity.DeviceSensorType" >
+         SELECT CHANNEL_ID FROM  `device_sensor_type` WHERE DEL_FLAG = '0'
+        <if test="manufacturer != null and manufacturer != ''">
+            AND `MANUFACTURER` = #{manufacturer}
+        </if>
+        <if test="model != null and model != ''">
+            AND `MODEL` = #{model}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND `EQUIPMENT_TYPE` = #{equipmentType}
+        </if>
+    </select>
+
+    <!-- 查询租户所属设备的所以设备类型 -->
+    <select id="selectByTenant" resultMap="deviceSensorTypeMap">
+        select distinct dst.* from device_sensor ds
+        join device_sensor_type dst on ds.SENSOR_TYPE_ID = dst.ID
+        where ds.TENANT_ID = #{tenantId}
+    </select>
+
+    <resultMap id="selectTreeByChannelIdMap" type="map">
+        <result property="manufacturer" column="MANUFACTURER" />
+        <collection property="equipmentTypes" ofType="map" javaType="list">
+            <result property="equipmentType" column="EQUIPMENT_TYPE" />
+            <collection property="models" ofType="map" javaType="list">
+                <result property="model" column="MODEL" />
+            </collection>
+        </collection>
+    </resultMap>
+    <!-- 根据channelId查询设备类型 -->
+    <select id="selectTreeByChannelId" resultMap="selectTreeByChannelIdMap">
+        select distinct MANUFACTURER,EQUIPMENT_TYPE,MODEL FROM  `device_sensor_type` WHERE DEL_FLAG = '0'
+        <if test="channelId != null and channelId.length > 0">
+            AND CHANNEL_ID in
+            <foreach collection="channelId" separator="," close=")" open="(" item="channel">
+                #{channel}
+            </foreach>
+        </if>
+        <if test="notInChannelId != null and notInChannelId.length > 0">
+            AND CHANNEL_ID not in
+            <foreach collection="notInChannelId" separator="," close=")" open="(" item="channel">
+                #{channel}
+            </foreach>
+        </if>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceFireMainMapper" >
+      <resultMap id="deviceFireMainMap" type="cn.turing.firecontrol.device.entity.DeviceFireMain" >
+          <id column="ID" property="id" jdbcType="INTEGER" />
+          <result column="SERVER_IP" property="serverIp" jdbcType="VARCHAR" />
+          <result column="PORT" property="port" jdbcType="VARCHAR" />
+          <result column="GIS" property="gis" jdbcType="VARCHAR" />
+          <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+          <result column="DEL_FLAG" property="delFlag" jdbcType="CHAR" />
+          <result column="CRT_USER_NAME" property="crtUserName" jdbcType="VARCHAR" />
+          <result column="CRT_USER_ID" property="crtUserId" jdbcType="VARCHAR" />
+          <result column="CRT_TIME" property="crtTime" jdbcType="TIMESTAMP" />
+          <result column="UPD_USER_NAME" property="updUserName" jdbcType="VARCHAR" />
+          <result column="UPD_USER_ID" property="updUserId" jdbcType="VARCHAR" />
+          <result column="UPD_TIME" property="updTime" jdbcType="TIMESTAMP" />
+          <result column="DEPART_ID" property="departId" jdbcType="VARCHAR" />
+          <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR" />
+      </resultMap>
+
+      <resultMap id="map" type="map" >
+          <id column="ID" property="id" jdbcType="INTEGER" />
+          <result column="SERVER_IP" property="serverIp" jdbcType="VARCHAR" />
+          <result column="PORT" property="port" jdbcType="VARCHAR" />
+          <result column="GIS" property="gis" jdbcType="VARCHAR" />
+          <result column="POSITION_DESCRIPTION" property="positionDescription" jdbcType="VARCHAR" />
+      </resultMap>
+
+
+      <select id="selectPageList"  resultMap="map" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMain">
+         SELECT  `ID`,`SERVER_IP`,`PORT`,`GIS`,`POSITION_DESCRIPTION` FROM `device_fire_main`  WHERE DEL_FLAG = '0'
+           <if test="serverIp != null and serverIp != ''">
+             AND `SERVER_IP` like '%${serverIp}%'
+           </if>
+           <if test="port != null and port != ''">
+             AND `PORT`=#{port}
+           </if>
+           <if test="positionDescription != null and positionDescription != ''">
+             AND `POSITION_DESCRIPTION`=#{positionDescription}
+           </if>
+           <if test="gis== '0'.toString()">
+             AND (`GIS` = '' or `GIS` is NULL )
+           </if>
+           <if test="gis == '1'.toString()">
+             AND `GIS` != ''
+           </if>
+           order by CRT_TIME DESC
+      </select>
+
+
+      <!-- 主机+ip是否重复忽略租户隔离-->
+      <select id="selectIgnoreTenantByCount" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMain" resultType="Integer">
+          SELECT COUNT(*) FROM `device_fire_main` WHERE DEL_FLAG = '0'
+        <if test="serverIp != null and serverIp != ''">
+          AND `SERVER_IP` =#{serverIp}
+        </if>
+        <if test="port != null and port != ''">
+          AND `PORT`=#{port}
+        </if>
+      </select>
+
+
+      <!-- 查询所有的没有删除的数据忽略租户隔离 -->
+    <select id="getIgnoreTenantAll"  resultMap="deviceFireMainMap" >
+        SELECT  `ID`,`SERVER_IP`,`PORT`,`GIS`,`POSITION_DESCRIPTION` FROM `device_fire_main`  WHERE DEL_FLAG = '0'
+        order by CRT_TIME DESC
+    </select>
+
+
+    <select id="getById" parameterType="cn.turing.firecontrol.device.entity.DeviceFireMain" resultMap="deviceFireMainMap">
+        SELECT * FROM `device_fire_main` WHERE DEL_FLAG = '0' AND ID = #{_parameter}
+    </select>
+
+
+
+</mapper>

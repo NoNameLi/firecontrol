@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.turing.firecontrol.device.mapper.DeviceVideoExtMapper">
+
+    <resultMap id="BaseResultMap" type="cn.turing.firecontrol.device.entity.DeviceVideoExt">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="DEVICE_GROUP_ID" property="deviceGroupId" jdbcType="INTEGER"/>
+        <result column="DEVICE_VIDEO_NAME" property="deviceVideoName" jdbcType="VARCHAR"/>
+        <result column="SENSOR_NO" property="sensorNo" jdbcType="VARCHAR"/>
+        <result column="DEVICE_VALIDATE_CODE" property="deviceValidateCode" jdbcType="VARCHAR"/>
+        <result column="SHOW_FLAG" property="showFlag" jdbcType="CHAR"/>
+        <result column="ANALYSIS_SOLUTION_ID" property="analysisSolutionId" jdbcType="INTEGER"/>
+        <result column="VIDEO_LIVE_ADDRESS" property="videoLiveAddress" jdbcType="LONGVARCHAR"/>
+        <result column="ALARM_MSG" property="alarmMsg" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="baseColumn">
+    ID,DEVICE_GROUP_ID,DEVICE_VIDEO_NAME,SENSOR_NO,DEVICE_VALIDATE_CODE,SHOW_FLAG,ANALYSIS_SOLUTION_ID,VIDEO_LIVE_ADDRESS,ALARM_MSG
+  </sql>
+
+    <select id="getAllToAnalysisDevices" resultMap="BaseResultMap">
+        SELECT a.* from device_video_ext a LEFT JOIN device_sensor b on a.id=b.id
+        LEFT JOIN device_video_analysis_solution c on a.ANALYSIS_SOLUTION_ID=c.id
+        where c.ANALYSIS_SOLUTION_CODE = #{analysisCode}
+        <if test="tenantId != null and tenantId != ''">
+            and b.TENANT_ID=#{tenantId}
+        </if>
+    </select>
+
+    <select id="queryByPage" resultType="map">
+      SELECT dve.id id, ds.status status,dve.DEVICE_VIDEO_NAME deviceName,dve.SENSOR_NO sensorNo,dst.MANUFACTURER manufacturer,dst.EQUIPMENT_TYPE equipmentType,
+          dst.MODEL model,dvg.DEVICE_GROUP_NAME groupName,case when ds.POSITION_SIGN is not null and ds.POSITION_SIGN &lt;&gt; '' then '已标记' else '未标记' end as isMark
+        from device_video_ext dve
+        join device_sensor ds on dve.id = ds.ID
+        join device_sensor_type dst on dst.id = ds.SENSOR_TYPE_ID
+        join device_video_group dvg on dvg.ID = dve.DEVICE_GROUP_ID
+        where ds.DEL_FLAG = '0'
+        <if test="groupId != null and groupId != ''">
+            AND dve.DEVICE_GROUP_ID = #{groupId}
+        </if>
+        <if test="sensorNo != null and sensorNo != ''">
+            AND dve.SENSOR_NO like '%${sensorNo}%'
+        </if>
+        <if test="status != null and status != ''">
+            AND ds.STATUS = #{status}
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            AND dve.DEVICE_VIDEO_NAME like '%${deviceName}%'
+        </if>
+        <if test="manufacturer != null and manufacturer != ''">
+            AND dst.MANUFACTURER = #{manufacturer}
+        </if>
+        <if test="equipmentType != null and equipmentType != ''">
+            AND dst.EQUIPMENT_TYPE = #{equipmentType}
+        </if>
+        <if test="model != null and model != ''">
+            AND dst.MODEL = #{model}
+        </if>
+        <if test="isMark != null and isMark != ''">
+            <choose>
+                <when test="isMark == 1">
+                    AND (ds.POSITION_SIGN is not null and ds.POSITION_SIGN &lt;&gt; '')
+                </when>
+                <otherwise>
+                    AND (ds.POSITION_SIGN is null or ds.POSITION_SIGN = '')
+                </otherwise>
+            </choose>
+        </if>
+        <if test="tenantId != null and tenantId != ''">
+            and ds.TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+
+    <select id="queryOnlyExt" resultMap="BaseResultMap">
+        select
+        <include refid="baseColumn"/>
+        from device_video_ext
+        <where>
+            <if test="id != null and id != ''">
+                ID = #{id}
+            </if>
+            <if test="deviceGroupId != null and deviceGroupId != ''">
+                AND DEVICE_GROUP_ID = #{deviceGroupId}
+            </if>
+            <if test="deviceVideoName != null and deviceVideoName != ''">
+                AND DEVICE_VIDEO_NAME = #{deviceVideoName}
+            </if>
+            <if test="sensorNo != null and sensorNo != ''">
+                AND SENSOR_NO = #{sensorNo}
+            </if>
+            <if test="deviceValidateCode != null and deviceValidateCode != ''">
+                AND DEVICE_VALIDATE_CODE = #{deviceValidateCode}
+            </if>
+            <if test="showFlag != null and showFlag != ''">
+                AND SHOW_FLAG = #{showFlag}
+            </if>
+            <if test="analysisSolutionId != null and analysisSolutionId != ''">
+                AND ANALYSIS_SOLUTION_ID = #{analysisSolutionId}
+            </if>
+            <if test="videoLiveAddress != null and videoLiveAddress != ''">
+                AND VIDEO_LIVE_ADDRESS = #{videoLiveAddress}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryShowDevice" resultType="map">
+        select dve.ID id,dve.DEVICE_VIDEO_NAME deviceName,dve.SENSOR_NO sensorNo,dve.VIDEO_LIVE_ADDRESS liveAddress,dve.ALARM_MSG,dvas.ANALYSIS_SOLUTION_NAME solutionName
+          from device_video_ext dve
+          left join device_video_analysis_solution dvas on dve.ANALYSIS_SOLUTION_ID = dvas.ID
+          where dve.SHOW_FLAG = "1"
+    </select>
+
+    <select id="queryDevice" resultType="map">
+        select dve.ID id,dve.DEVICE_VIDEO_NAME deviceName,dve.SENSOR_NO sensorNo,dve.VIDEO_LIVE_ADDRESS liveAddress,dve.ALARM_MSG alarmMsg,dvas.ANALYSIS_SOLUTION_NAME solutionName,case when dve.ANALYSIS_SOLUTION_ID is null then false else true end hasSolution
+          from device_video_ext dve
+          join device_sensor ds on ds.ID = dve.ID
+          left join device_video_analysis_solution dvas on dve.ANALYSIS_SOLUTION_ID = dvas.ID
+          <where>
+              <if test="showFlag != null and showFlag != ''">
+                  AND dve.SHOW_FLAG = #{showFlag}
+              </if>
+              <if test="hasSolution != null">
+                  <choose>
+                      <when test="hasSolution">AND dve.ANALYSIS_SOLUTION_ID is not null</when>
+                      <otherwise>AND dve.ANALYSIS_SOLUTION_ID is null</otherwise>
+                  </choose>
+              </if>
+              <if test="groupId != null">
+                  AND dve.DEVICE_GROUP_ID = #{groupId}
+              </if>
+              <if test="tenantId != null and tenantId != ''">
+                  and ds.TENANT_ID = #{tenantId}
+              </if>
+          </where>
+    </select>
+
+    <update id="updateDeviceShowStatus">
+        update device_video_ext dve
+        join device_sensor ds on dve.id = ds.id
+        set SHOW_FLAG = #{status}
+        where ds.DEL_FLAG = '0'
+        <if test="ids != null and ids.length > 0">
+            and dve.id in
+            <foreach item="item" index="index" collection="ids"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="tenantId != null and tenantId != ''">
+            and ds.TENANT_ID = #{tenantId}
+        </if>
+    </update>
+
+    <update id="updateSolution" >
+        update device_video_ext
+        set ANALYSIS_SOLUTION_ID = #{solutionId}
+        where ID = #{deviceId}
+    </update>
+
+
+    <select id="queryById" resultType="cn.turing.firecontrol.device.vo.DeviceSensorVo">
+      SELECT
+        ds.id id,
+        ds.SENSOR_NO sensorNo,
+        dve.DEVICE_GROUP_ID groupId,
+        dve.DEVICE_VALIDATE_CODE validateCode,
+        dst.MANUFACTURER manufacturer,
+        dst.EQUIPMENT_TYPE equipmentType,
+        dst.MODEL model,
+        dve.DEVICE_VIDEO_NAME deviceName,
+        ds.POSITION_SIGN positionSign
+    FROM
+        device_sensor ds
+    JOIN device_video_ext dve ON ds.id = dve.id
+    JOIN device_sensor_type dst ON dst.id = ds.SENSOR_TYPE_ID
+    WHERE
+        ds.id = #{sensorId} and ds.DEL_FLAG = 0
+        <if test="tenantId != null and tenantId != ''">
+            and ds.TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <select id="getVideoDeviceDetail" resultType="cn.turing.firecontrol.device.vo.VideoDeviceVo">
+        SELECT
+        ds.id id,
+        ds.SENSOR_NO sensorNo,
+        dve.DEVICE_VALIDATE_CODE validateCode,
+        dst.MANUFACTURER manufacturer,
+        dst.EQUIPMENT_TYPE equipmentType,
+        dst.MODEL model,
+        dve.DEVICE_VIDEO_NAME deviceName,
+        ds.POSITION_SIGN positionSign,
+        ds.STATUS status,
+        dve.VIDEO_LIVE_ADDRESS liveAddress,
+        dvg.DEVICE_GROUP_NAME groupName,
+        dvas.ANALYSIS_SOLUTION_NAME solutionName
+        FROM
+        device_sensor ds
+        JOIN device_video_ext dve ON ds.id = dve.id
+        LEFT JOIN device_sensor_type dst ON dst.id = ds.SENSOR_TYPE_ID
+        JOIN device_video_group dvg ON dve.DEVICE_GROUP_ID = dvg.ID
+        LEFT JOIN device_video_analysis_solution dvas ON dve.ANALYSIS_SOLUTION_ID = dvas.ID
+        WHERE
+        ds.DEL_FLAG = 0
+        <if test="tenantId != null and tenantId != ''">
+             and ds.TENANT_ID = #{tenantId}
+        </if>
+        AND dvg.DEL_FLAG = 0
+        AND ds.id = #{sensorId}
+        LIMIT 0,1
+    </select>
+
+    <select id="querySameRealSensorNos" resultMap="BaseResultMap">
+        select <include refid="baseColumn"/>
+        from device_video_ext
+        where SENSOR_NO like '${realSensorNo}:%'
+    </select>
+
+
+    <update id="updateOnlyExtSelectiveBySensorNo">
+        update device_video_ext
+        <set>
+            <if test="deviceGroupId">DEVICE_GROUP_ID = #{deviceGroupId}</if>
+            <if test="deviceVideoName">DEVICE_VIDEO_NAME = #{deviceVideoName}</if>
+            <if test="deviceValidateCode">DEVICE_VALIDATE_CODE = #{deviceValidateCode}</if>
+            <if test="showFlag">SHOW_FLAG = #{showFlag}</if>
+            <if test="analysisSolutionId">ANALYSIS_SOLUTION_ID = #{analysisSolutionId}</if>
+            <if test="videoLiveAddress">VIDEO_LIVE_ADDRESS = #{videoLiveAddress}</if>
+            <if test="alarmMsg">ALARM_MSG = #{alarmMsg}</if>
+        </set>
+        where SENSOR_NO = #{sensorNo}
+    </update>
+</mapper>

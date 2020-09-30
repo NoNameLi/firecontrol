@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: demo
+  cloud:
+    config:
+      discovery:
+        service-id: ${CONFIG_SERVER:turing-config}
+        enabled: true
+      label: ${CONFIG_LABEL:master} # git 分支
+      name: datahandler
+      profile: ${spring.profiles.active}
+
+management:
+  security:
+    enabled: false
+
+eureka:
+  instance:
+    #    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    ip-address:  ${spring.cloud.client.ipAddress}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://${CENTER_HOST:turing-center}:${CENTER_PORT:8761}/eureka/
