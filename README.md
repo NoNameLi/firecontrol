@@ -16,7 +16,7 @@ CREATE DATABASE `turing_device` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
 ### 基础配置准备
 SpringCloud使用gitee来作为配置中心
-[示例配置文件地址](https://gitee.com/8090diy/fire_control_config_example)
+[示例配置文件地址](https://gitee.com/zkturing-tmc/fire_control_config_example)
 
 修改gitee上各个微服务配置下的数据库链接信息，并对应修改微服务代码配置yml里面的gitee配置信息
 
