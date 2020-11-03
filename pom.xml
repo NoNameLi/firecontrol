@@ -38,6 +38,9 @@
         <module>turing-gate</module>
         <module>turing-modules</module>
         <module>turing-base</module>
+        <module>turing-device</module>
+        <module>turing-datacollection</module>
+        <module>turing-datahandler</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -105,13 +108,13 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>snapshots</id>
+            <url>http://139.198.122.166:8081/nexus/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
+            <id>releases</id>
             <name>Maven Central Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>http://139.198.122.166:8081/nexus/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 

@@ -4,7 +4,7 @@
 - redis 5.0.0
 - elasticsearch 6.5.4
 - rabbitmq 3.6.9
-
+使用根目录下maven 配置文件
 mysql数据库资源创建好后，执行如下sql创建初始化数据库
 ```
 CREATE DATABASE `turing-admin` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';

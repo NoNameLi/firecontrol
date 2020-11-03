@@ -5,12 +5,12 @@
     <parent>
         <artifactId>firecontrol</artifactId>
         <groupId>cn.turing.firecontrol</groupId>
-        <version>V1.7.0-RELEASE</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>turing-datahandler</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <docker.image.prefix>turing</docker.image.prefix>
@@ -315,90 +315,6 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                </configuration>
-            </plugin>
-           <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>prepare-dockerfile</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/docker</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/src/main/docker</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
-<!--            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>${docker.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    &lt;!&ndash;演示服务器&ndash;&gt;
-                    &lt;!&ndash;<dockerHost>http://117.48.208.124:52375</dockerHost>&ndash;&gt;
-                    &lt;!&ndash;开发服务器&ndash;&gt;
-                    &lt;!&ndash;<dockerHost>http://192.168.0.22:2375</dockerHost>&ndash;&gt;
-                    &lt;!&ndash;开发服务器&ndash;&gt;
-                    &lt;!&ndash;<dockerHost>http://192.168.0.133:52375</dockerHost>&ndash;&gt;
-                    &lt;!&ndash;测试服务器&ndash;&gt;
-                    <dockerHost>http://183.2.168.20:52375</dockerHost>
-                    &lt;!&ndash;开发服务器&ndash;&gt;
-                    &lt;!&ndash;<dockerHost>http://192.168.0.68:2375</dockerHost>&ndash;&gt;
-                    &lt;!&ndash;新蓝天服务器&ndash;&gt;
-                    &lt;!&ndash;<dockerHost>http://117.48.208.77:52375</dockerHost>&ndash;&gt;
-                    &lt;!&ndash;特斯联服务器&ndash;&gt;
-                   &lt;!&ndash; <dockerHost>http://47.110.137.233:52375</dockerHost>&ndash;&gt;
-                    <imageName>${docker.image.prefix}/${project.build.finalName}:scnx</imageName>
-                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>-->
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.10</version>
-                <executions>
-                    <execution>
-                        <id>build-push-image</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>build</goal>
-<!--                            <goal>push</goal>-->
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <dockerfile>Dockerfile</dockerfile>
-                    <repository>${docker.registry}/turingv/${project.build.finalName}</repository>
-                    <tag>V1.7.0-RELEASE-ahjg</tag>  <!--不指定tag，默认为latest-->
-                    <buildArgs>
-                        <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
-                    </buildArgs>
-                    <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
                 </configuration>
             </plugin>
             <plugin>
