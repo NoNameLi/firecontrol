@@ -44,6 +44,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
+
             <artifactId>spring-cloud-starter-feign</artifactId>
         </dependency>
         <!--增加eureka-server的依赖-->

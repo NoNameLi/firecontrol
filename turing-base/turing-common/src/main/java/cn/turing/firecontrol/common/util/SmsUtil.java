@@ -16,15 +16,15 @@ import java.util.Map;
 public class SmsUtil {
 
     //ACCESS_KEY_ID
-    private static final String ACCESS_KEY_ID = "LTAISrSrk22dFvak";
+    private static final String ACCESS_KEY_ID = "";
     //ACCESS_KEY_SECRET
-    private static final String ACCESS_KEY_SECRET = "ypq2b7R5Rp73xwdhw69QNcKL1Iaif9";
+    private static final String ACCESS_KEY_SECRET = "";
     //验证码短信模板
-    private static final String VALICODE_TEMPLATE = "SMS_141190128";
+    private static final String VALICODE_TEMPLATE = "";
     //预警短信模板
-    private static final String EARLY_WARNING_TEMPLATE = "SMS_145596757";
+    private static final String EARLY_WARNING_TEMPLATE = "";
     //报警短信模板
-    private static final String ALARM_TEMPLATE = "SMS_146800927";//"SMS_145596759";
+    private static final String ALARM_TEMPLATE = "";//"SMS_145596759";
     //短信签名
     private static final String SIGN = "智慧消防";
 
