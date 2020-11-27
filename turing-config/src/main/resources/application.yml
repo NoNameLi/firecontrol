@@ -7,7 +7,7 @@ spring:
         config:
             server:
                 git:
-                  uri: gitee配置文件地址
+                  uri: https://gitee.com/greenhandpeng/fire_control_config_example
                   username:
                   password:
                   basedir: config-repo
@@ -30,10 +30,10 @@ eureka:
     healthCheckUrlPath: /health
     prefer-ip-address: true
 #    ip-address:  ${spring.cloud.client.ipAddress}
-    ip-address:  192.168.0.22
+    ip-address:  127.0.0.1
     leaseRenewalIntervalInSeconds: 5
   client:
     serviceUrl:
-      defaultZone: http://192.168.0.22:8761/eureka/
+      defaultZone: http://127.0.0.1:8761/eureka/
 
 

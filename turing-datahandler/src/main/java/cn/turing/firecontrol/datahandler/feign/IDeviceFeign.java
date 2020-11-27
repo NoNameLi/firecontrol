@@ -3,13 +3,15 @@ package cn.turing.firecontrol.datahandler.feign;
 import cn.turing.firecontrol.common.msg.ObjectRestResponse;
 import cn.turing.firecontrol.common.msg.TableResultResponse;
 import cn.turing.firecontrol.datahandler.entity.DeviceAbnormal;
+import cn.turing.firecontrol.datahandler.entity.DeviceBuilding;
 import cn.turing.firecontrol.datahandler.entity.DeviceFacilitiesAbnormal;
-import cn.turing.firecontrol.device.entity.DeviceBuilding;
-import cn.turing.firecontrol.device.entity.DeviceSensorType;
+import cn.turing.firecontrol.datahandler.entity.DeviceSensorType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 

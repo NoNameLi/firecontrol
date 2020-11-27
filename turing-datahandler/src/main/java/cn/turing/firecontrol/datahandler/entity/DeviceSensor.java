@@ -1,4 +1,4 @@
-package cn.turing.firecontrol.device.entity;
+package cn.turing.firecontrol.datahandler.entity;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;

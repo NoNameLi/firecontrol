@@ -10,7 +10,6 @@ import cn.turing.firecontrol.datahandler.feign.IDeviceFeign;
 import cn.turing.firecontrol.datahandler.feign.IUserFeign;
 import cn.turing.firecontrol.datahandler.listener.abnormalHandler.AbstractAbnormalHandler;
 import cn.turing.firecontrol.datahandler.util.ValidatorUtils;
-import cn.turing.firecontrol.device.entity.DeviceSensor;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

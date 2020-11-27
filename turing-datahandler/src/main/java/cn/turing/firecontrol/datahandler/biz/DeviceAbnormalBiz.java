@@ -4,6 +4,9 @@ import cn.turing.firecontrol.common.biz.BusinessBiz;
 import cn.turing.firecontrol.common.msg.TableResultResponse;
 import cn.turing.firecontrol.common.util.Query;
 import cn.turing.firecontrol.core.context.BaseContextHandler;
+import cn.turing.firecontrol.datahandler.entity.DeviceAbnormal;
+import cn.turing.firecontrol.datahandler.entity.DeviceBuilding;
+import cn.turing.firecontrol.datahandler.entity.DeviceSensorType;
 import cn.turing.firecontrol.datahandler.enums.AlarmStatusEnum;
 import cn.turing.firecontrol.datahandler.feign.IDeviceFeign;
 import cn.turing.firecontrol.datahandler.listener.abnormalHandler.AbstractAbnormalHandler;
@@ -12,9 +15,6 @@ import cn.turing.firecontrol.datahandler.mapper.DeviceFireMainAbnormalMapper;
 import cn.turing.firecontrol.datahandler.util.Constants;
 import cn.turing.firecontrol.datahandler.util.DateUtil;
 import cn.turing.firecontrol.datahandler.vo.*;
-import cn.turing.firecontrol.datahandler.entity.DeviceAbnormal;
-import cn.turing.firecontrol.device.entity.DeviceBuilding;
-import cn.turing.firecontrol.device.entity.DeviceSensorType;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 

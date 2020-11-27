@@ -1,16 +1,14 @@
 package cn.turing.firecontrol.datahandler.business;
 
+import cn.turing.firecontrol.datahandler.entity.DeviceSensor;
 import cn.turing.firecontrol.datahandler.listener.abnormalHandler.AbstractAbnormalHandler;
-import cn.turing.firecontrol.datahandler.listener.abnormalHandler.DefaultAbnormalHandler;
-import cn.turing.firecontrol.device.entity.DeviceSensor;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 public interface BusinessI {

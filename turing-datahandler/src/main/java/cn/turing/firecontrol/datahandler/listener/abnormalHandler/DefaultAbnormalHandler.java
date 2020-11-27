@@ -1,27 +1,11 @@
 package cn.turing.firecontrol.datahandler.listener.abnormalHandler;
 
-import cn.turing.firecontrol.datahandler.base.Constant;
-import cn.turing.firecontrol.datahandler.biz.DeviceAbnormalBiz;
 import cn.turing.firecontrol.datahandler.business.BusinessI;
-import cn.turing.firecontrol.datahandler.feign.IDeviceFeign;
-import cn.turing.firecontrol.device.entity.DeviceAbnormal;
-import cn.turing.firecontrol.device.entity.DeviceSensor;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 @Component
 @Slf4j

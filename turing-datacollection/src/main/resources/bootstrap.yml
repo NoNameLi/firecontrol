@@ -23,5 +23,5 @@ eureka:
     leaseRenewalIntervalInSeconds: 5
   client:
     serviceUrl:
-      defaultZone: http://${CENTER_HOST:turing-center}:${CENTER_PORT:8761}/eureka/
+      defaultZone: http://${CENTER_HOST:127.0.0.1}:${CENTER_PORT:8761}/eureka/
 

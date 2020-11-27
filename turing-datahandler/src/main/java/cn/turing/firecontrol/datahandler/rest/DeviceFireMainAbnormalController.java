@@ -1,6 +1,9 @@
 package cn.turing.firecontrol.datahandler.rest;
 
-import cn.turing.firecontrol.auth.client.annotation.*;
+import cn.turing.firecontrol.auth.client.annotation.CheckClientToken;
+import cn.turing.firecontrol.auth.client.annotation.CheckUserToken;
+import cn.turing.firecontrol.auth.client.annotation.IgnoreClientToken;
+import cn.turing.firecontrol.auth.client.annotation.IgnoreUserToken;
 import cn.turing.firecontrol.common.exception.base.ParamErrorException;
 import cn.turing.firecontrol.common.msg.ObjectRestResponse;
 import cn.turing.firecontrol.common.msg.TableResultResponse;
@@ -14,7 +17,6 @@ import cn.turing.firecontrol.datahandler.util.Constants;
 import cn.turing.firecontrol.datahandler.util.DateUtil;
 import cn.turing.firecontrol.datahandler.util.SortUtil;
 import cn.turing.firecontrol.datahandler.util.ValidatorUtils;
-import cn.turing.firecontrol.device.entity.DeviceSensor;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;

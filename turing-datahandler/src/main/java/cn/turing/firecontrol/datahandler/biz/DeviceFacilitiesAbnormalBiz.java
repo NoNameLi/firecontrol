@@ -14,7 +14,6 @@ import cn.turing.firecontrol.datahandler.vo.AlrmVo;
 import cn.turing.firecontrol.datahandler.vo.DeviceAbnormalVo;
 import cn.turing.firecontrol.datahandler.vo.ResultVo;
 import cn.turing.firecontrol.datahandler.entity.DeviceFacilitiesAbnormal;
-import cn.turing.firecontrol.device.entity.DeviceSensor;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
