@@ -34,7 +34,8 @@ import java.util.List;
 /**
  * Created by ace on 2017/9/15.
  */
-@FeignClient(value = "${auth.serviceId}",configuration = {})
+//@FeignClient(value = "${auth.serviceId}",configuration = {})
+@FeignClient(value = "turing-auth",configuration = {})
 public interface ServiceAuthFeign {
     @RequestMapping(value = "/client/myClient")
     public ObjectRestResponse<List<String>> getAllowedClient(@RequestParam("serviceId") String serviceId, @RequestParam("secret") String secret);

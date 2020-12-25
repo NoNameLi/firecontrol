@@ -1,39 +1,43 @@
 package cn.turing.firecontrol.device.util;
 
 import cn.turing.firecontrol.device.entity.ElasticSearchEntity;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.beanutils.BeanUtils;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.admin.indices.alias.Alias;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortMode;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created on 2019/02/15 15:47
@@ -44,46 +48,82 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class ESTransportUtil {
 
-    private TransportClient transportClient;
+    private RestHighLevelClient client;
 
-    public ESTransportUtil(TransportClient transportClient) {
-        this.transportClient = transportClient;
+    private String alias = "";
+    private Integer shards = 1;
+    private Integer replicas = 1;
+
+    public ESTransportUtil(RestHighLevelClient client, String alias, Integer shards, Integer replicas) {
+        this.client = client;
+        this.alias = alias;
+        this.shards = shards;
+        this.replicas = replicas;
     }
 
     //判断索引是否存在
     public boolean isIndexExist(String index) {
-        return transportClient.admin().indices().prepareExists(index).execute().actionGet().isExists();
+        GetRequest getRequest = new GetRequest(index);
+        try {
+            return client.exists(getRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     //删除索引
     public boolean deleteIndex(String index) {
-        return isIndexExist(index) && transportClient.admin().indices().prepareDelete(index).execute().actionGet().isAcknowledged();
+        DeleteIndexRequest request = new DeleteIndexRequest(index);
+        try {
+            AcknowledgedResponse delete = client.indices().delete(request, RequestOptions.DEFAULT);
+            return true;
+        } catch (IOException e) {
+            log.error("删除错误，", e);
+            return false;
+        }
     }
 
     //新增索引
     public boolean addIndex(String index) {
-        return !isIndexExist(index) && transportClient.admin().indices().prepareCreate(index).execute().actionGet().isAcknowledged();
+        //索引名称
+        CreateIndexRequest request = new CreateIndexRequest(index);
+        request.settings(Settings.builder().put("index.number_of_shards", shards)
+                .put("index.number_of_replicas", replicas));
+        request.alias(new Alias(alias));
+        try {
+            client.indices().create(request, RequestOptions.DEFAULT);
+            return true;
+        } catch (IOException e) {
+            log.error("创建索引失败，", e);
+            return false;
+        }
     }
 
     //判断inde下指定type是否存在
     public boolean isTypeExist(String index, String type) {
-        return isIndexExist(index) && transportClient.admin().indices().prepareTypesExists(index).setTypes(type).execute().actionGet().isExists();
+        GetIndexRequest getIndexRequest = new GetIndexRequest(index);
+        try {
+            return client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            return false;
+        }
+
     }
 
     /**
      * 新增类型
+     *
      * @param index
      * @param type
      * @param fields key为字段名，Value为字段类型
      * @return
      * @throws IOException
      */
-    public boolean addIndexAndType(String index,String type, Map<String,String> fields){
+    public boolean addIndexAndType(String index, String type, Map<String, String> fields) {
         // 创建索引映射,相当于创建数据库中的表操作
-        CreateIndexRequestBuilder cib = transportClient.admin().indices().prepareCreate(index);
-        XContentBuilder mapping = null;
         try {
-            mapping = XContentFactory.jsonBuilder().startObject().startObject("properties");// 设置自定义字段
+            XContentBuilder builder = XContentFactory.jsonBuilder();
+            XContentBuilder mapping = builder.startObject().startObject("properties");// 设置自定义字段
             Set<Map.Entry<String, String>> entries = fields.entrySet();
             for (Map.Entry<String, String> e : entries) {
                 mapping.startObject(e.getKey()).field("type", e.getValue());
@@ -93,100 +133,133 @@ public class ESTransportUtil {
                 mapping.endObject();
             }
             mapping.endObject().endObject();
-        }catch (IOException e){
-            log.error("创建索引失败",e);
-            throw new RuntimeException("创建索引失败",e);
+            createIndex(index, builder);
+            return true;
+        } catch (IOException e) {
+            log.error("创建索引失败", e);
+            throw new RuntimeException("创建索引失败", e);
         }
-        cib.addMapping(type, mapping);
-        return cib.execute().actionGet().isAcknowledged();
     }
 
-    public boolean addIndexAndType(String index,String type, Class clazz){
+    public boolean addIndexAndType(String index, String type, Class clazz) {
         // 创建索引映射,相当于创建数据库中的表操作
-        CreateIndexRequestBuilder cib = transportClient.admin().indices().prepareCreate(index);
-        XContentBuilder mapping = null;
         try {
-            mapping = XContentFactory.jsonBuilder().startObject().startObject("properties");// 设置自定义字段
+            XContentBuilder builder = XContentFactory.jsonBuilder();
+            XContentBuilder mapping = builder.startObject().startObject("properties");// 设置自定义字段
             Field[] fields = clazz.getDeclaredFields();
             String fieldType = null;
-            for(Field f : fields) {
+            for (Field f : fields) {
                 fieldType = toEsType(f.getType());
-                if(fieldType == null){
+                if (fieldType == null) {
                     continue;
                 }
                 mapping.startObject(f.getName()).field("type", fieldType);
                 if ("date".equals(fieldType)) {
-                    mapping.field("format", Constants.ES_DATE_FORMAT);
+                    mapping.field("format", "yyyy-MM-dd HH:mm:ss");
                 }
                 mapping.endObject();
             }
             mapping.endObject().endObject();
-        }catch (IOException e){
-            log.error("创建索引失败",e);
-            throw new RuntimeException("创建索引失败",e);
+            createIndex(index, builder);
+            return true;
+        } catch (IOException e) {
+            log.error("创建索引失败", e);
+            throw new RuntimeException("创建索引失败", e);
         }
-        cib.addMapping(type, mapping);
-        return cib.execute().actionGet().isAcknowledged();
     }
 
+    private CreateIndexResponse createIndex(String index, XContentBuilder builder) throws IOException {
+        CreateIndexRequest request = new CreateIndexRequest(index);
+        request.settings(Settings.builder().put("index.number_of_shards", shards)
+                .put("index.number_of_replicas", replicas));
+        request.alias(new Alias(alias));
+        request.mapping(builder);
+        return client.indices().create(request, RequestOptions.DEFAULT);
+    }
 
-    private String toEsType(Class clazz){
+    private String toEsType(Class clazz) {
         String className = clazz.getSimpleName();
-        if("String".equals(className)){
+        if ("String".equals(className)) {
             return "keyword";
         }
-        if("List".equals(className)){
+        if ("List".equals(className)) {
             return "text";
         }
         return className.toLowerCase();
     }
 
-
     //新增文档
-    public long addDocument(String index, String type, String id,  ElasticSearchEntity entity){
+    public long addDocument(String index, String type, String id, ElasticSearchEntity entity) {
         try {
-            Map<String,Object> map = entity.toMap();
-            IndexResponse response = transportClient.prepareIndex(index,type,id).setSource(map).get();
+            Map<String, Object> map = entity.toMap();
+            IndexRequest indexRequest = new IndexRequest(index, type, id);
+            indexRequest.source(map);
+            IndexResponse response = client.index(indexRequest, RequestOptions.DEFAULT);
             return response.getVersion();
         } catch (Exception e) {
-            log.error("插入文档失败",e);
-            throw new RuntimeException("插入文档失败",e);
+            log.error("插入文档失败", e);
+            throw new RuntimeException("插入文档失败", e);
+        }
+    }
+
+    public long addDocument(String index, String type, String id, Map<String, Object> map) {
+        try {
+            IndexRequest indexRequest = new IndexRequest(index, type, id);
+            indexRequest.source(map);
+            IndexResponse response = client.index(indexRequest, RequestOptions.DEFAULT);
+            return response.getVersion();
+        } catch (Exception e) {
+            log.error("插入文档失败", e);
+            throw new RuntimeException("插入文档失败", e);
         }
     }
 
     //删除文档
-    public String deleteDocument(String index,String type,String id) {
-        return transportClient.prepareDelete(index, type, id).get().getId();
+    public String deleteDocument(String index, String type, String id) {
+        DeleteRequest request = new DeleteRequest(index, type, id);
+        try {
+            DeleteResponse deleteResponse = client.delete(request, RequestOptions.DEFAULT);
+            if (deleteResponse.getShardInfo().getFailed() <= 0) {
+                return deleteResponse.getId();
+            } else {
+                throw new RuntimeException(deleteResponse.getShardInfo().getFailures()[0].reason());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("删除文档失败", e);
+        }
     }
 
 
     //更新文档
-    public String updateDocument(String index, String type, String id, ElasticSearchEntity entity){
+    public String updateDocument(String index, String type, String id, ElasticSearchEntity entity) {
         try {
             UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.index(index);
             updateRequest.type(type);
             updateRequest.id(id);
             updateRequest.doc(entity.toMap());
-            UpdateResponse response = transportClient.update(updateRequest).get();
-            return response.getId();
+            UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
+            return updateResponse.getId();
         } catch (Exception e) {
-            log.error("更新文档失败",e);
-            throw new RuntimeException("更新文档失败",e);
+            log.error("更新文档失败", e);
+            throw new RuntimeException("更新文档失败", e);
         }
     }
 
     //依据id查询
-    public String searchById(String index,String type,String id) {
-        GetResponse response = transportClient.prepareGet(index, type, id).execute().actionGet();
-        String jsonStr = response.getSourceAsString();
-        return jsonStr;
+    public String searchById(String index, String type, String id) {
+        GetRequest getRequest = new GetRequest(index, type, id);
+        try {
+            GetResponse documentFields = client.get(getRequest, RequestOptions.DEFAULT);
+            return documentFields.getSourceAsString();
+        } catch (IOException e) {
+            throw new RuntimeException("根据文档的id查询索引文档失败", e);
+        }
     }
 
     //查询索引下所有数据
     public List<String> queryAll(String index) {
-        QueryBuilder query = QueryBuilders.matchAllQuery();
-        SearchResponse response = transportClient.prepareSearch(index).setQuery(query).execute().actionGet();
+        SearchResponse response = queryAllInType(index, null, QueryBuilders.matchAllQuery(), null);
         List<String> list = new ArrayList<>();
         for (SearchHit searchHit : response.getHits()) {
             list.add(searchHit.getSourceAsString());
@@ -195,44 +268,66 @@ public class ESTransportUtil {
     }
 
     //查询类型下所有数据
-    public List<String> queryAllInType(String index, String type) {
-        SearchResponse response = transportClient.prepareSearch(index).setTypes(type).execute().actionGet();
-        List<String> list = new ArrayList<>();
-        for (SearchHit searchHit : response.getHits()) {
-            list.add(searchHit.getSourceAsString());
+    public SearchResponse queryAllInType(String index, String type, QueryBuilder queryBuilder, AggregationBuilder agg) {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(queryBuilder);
+        searchSourceBuilder.aggregation(agg);
+        SearchRequest searchRequest = new SearchRequest(index);
+        searchRequest.types(type);
+        searchRequest.source(searchSourceBuilder);
+        try {
+            return client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException("根据索引查询文档失败", e);
         }
-        return list;
+    }
+
+    public SearchResponse query(String index, String type, SearchSourceBuilder searchSourceBuilder) {
+        SearchRequest searchRequest = new SearchRequest(index);
+        searchRequest.source(searchSourceBuilder);
+        try {
+            return client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException("根据索引查询文档失败", e);
+        }
     }
 
     //查询索引下所有数据
-    public List<String> queryMatch(String index,String type, Map<String, Object> matchs,String orderBy, Boolean isAsc, int pageNum, int pageSize) {
-        SearchRequestBuilder request = transportClient.prepareSearch(index).setTypes(type);
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        if(matchs != null){
-            for(Map.Entry<String,Object> e : matchs.entrySet()){
-                boolQuery.must(QueryBuilders.matchQuery(e.getKey(),e.getValue()));
+    public List<String> queryMatch(String index, String type, Map<String, Object> matchs, String orderBy, Boolean isAsc, int pageNum, int pageSize) {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        QueryBuilder query = null;
+        if (matchs != null) {
+            for (Map.Entry<String, Object> e : matchs.entrySet()) {
+                query = QueryBuilders.matchQuery(e.getKey(), e.getValue());
+                searchSourceBuilder.query(query);
             }
         }
-        request.setQuery(boolQuery);
-        int from = pageSize * ( pageNum - 1);
-        request.setFrom(from).setSize(pageSize);
-        if(isAsc){
-            request.addSort(orderBy,SortOrder.ASC);
-        }else {
-            request.addSort(orderBy,SortOrder.DESC);
+        int from = pageSize * (pageNum - 1);
+        searchSourceBuilder.from(from).size(pageSize);
+        if (orderBy != null) {
+            if (isAsc) {
+                searchSourceBuilder.sort(orderBy, SortOrder.ASC);
+            } else {
+                searchSourceBuilder.sort(orderBy, SortOrder.DESC);
+            }
         }
-        SearchResponse response = request.execute().actionGet();
-        List<String> list = new ArrayList<>();
-        for (SearchHit searchHit : response.getHits()) {
-            String hit = searchHit.getSourceAsString();
-            JSONObject jsonObject = JSONObject.parseObject(hit);
-            jsonObject.put("id",searchHit.getId());
-            list.add(jsonObject.toJSONString());
+        SearchRequest searchRequest = new SearchRequest(index);
+        searchRequest.types(type);
+        searchRequest.source(searchSourceBuilder);
+        try {
+            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<String> list = new ArrayList<>();
+            for (SearchHit searchHit : response.getHits()) {
+                String hit = searchHit.getSourceAsString();
+                JSONObject jsonObject = JSONObject.parseObject(hit);
+                jsonObject.put("id", searchHit.getId());
+                list.add(jsonObject.toJSONString());
+            }
+            return list;
+        } catch (IOException e) {
+            throw new RuntimeException("查询错误", e);
         }
-        return list;
     }
-
-
 
 
     public static void main(String[] args) throws IOException {

@@ -9,6 +9,7 @@ import cn.turing.firecontrol.datahandler.entity.*;
 import cn.turing.firecontrol.datahandler.feign.IDeviceFeign;
 import cn.turing.firecontrol.datahandler.feign.IUserFeign;
 import cn.turing.firecontrol.datahandler.listener.abnormalHandler.AbstractAbnormalHandler;
+import cn.turing.firecontrol.datahandler.util.ESTransportUtil;
 import cn.turing.firecontrol.datahandler.util.ValidatorUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -37,7 +38,9 @@ public class BusinessImpl implements BusinessI {
     private  static final Logger log = LoggerFactory.getLogger(BusinessImpl.class);
 
     @Autowired
-    private TransportClient client;
+//    private TransportClient client;
+    private ESTransportUtil esTransportUtil;
+
     @Autowired
     private IUserFeign iUserFeign;
     @Autowired
@@ -200,8 +203,9 @@ public class BusinessImpl implements BusinessI {
     public void insertData(String index,String type,String id,Map<String, Object> map) {
         log.info("增加原始数据到ES开始");
         try {
-            IndexResponse response = client.prepareIndex(index, type, id).setSource(map).get();
-            log.info("返回的状态码：" + response.status().getStatus());
+            esTransportUtil.addDocument(index,type,id,map);
+//            IndexResponse response = client.prepareIndex(index, type, id).setSource(map).get();
+//            log.info("返回的状态码：" + response.status().getStatus());
         } catch (Exception e) {
             log.error("增加原始数据到ES出错");
             e.printStackTrace();

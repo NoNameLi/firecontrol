@@ -110,7 +110,7 @@ public class MenuBiz extends BusinessBiz<MenuMapper, Menu> {
      * @param userId
      * @return
      */
-    @Cache(key = "permission:menu:u{1}")
+//    @Cache(key = "permission:menu:u{1}")
     public List<Menu> getUserAuthorityMenuByUserId(String userId) {
         User user = userMapper.selectByPrimaryKey(userId);
         //如果租户为超级管理员则查询全部

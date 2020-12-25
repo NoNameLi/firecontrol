@@ -50,39 +50,42 @@ public class DeviceInitRunner implements ApplicationRunner {
 
 
     //初始化ElasticSearch索引
-    public void initElasticSearchIndex(){
+    public void initElasticSearchIndex() {
         log.info("初始化ES环境开始");
         Constants.AnalysisSolution solution = Constants.AnalysisSolution.FIRE;
         //创建视频分析数据索引
-        if(!esTransportUtil.isTypeExist(solution.getDataEsIndex(),solution.getCode())){
-            esTransportUtil.addIndexAndType(solution.getDataEsIndex(),solution.getCode(), DeviceVideoAnalysisData.class);
-        }
-        //创建视频分析异常数据索引
-        if(!esTransportUtil.isTypeExist(solution.getAbnormalEsIndex(),solution.getCode())){
-            esTransportUtil.addIndexAndType(solution.getAbnormalEsIndex(),solution.getCode(), DeviceVideoAbnormalData.class);
+        try {
+            if (!esTransportUtil.isTypeExist(solution.getDataEsIndex(), solution.getCode())) {
+                esTransportUtil.addIndexAndType(solution.getDataEsIndex(), solution.getCode(), DeviceVideoAnalysisData.class);
+            }
+            //创建视频分析异常数据索引
+            if (!esTransportUtil.isTypeExist(solution.getAbnormalEsIndex(), solution.getCode())) {
+                esTransportUtil.addIndexAndType(solution.getAbnormalEsIndex(), solution.getCode(), DeviceVideoAbnormalData.class);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         log.info("初始化ES环境结束");
     }
 
     //初始化RabbitMQ消息队列
-    public void initRabbitMQ(){
+    public void initRabbitMQ() {
         log.info("初始化MQ环境开始");
         //创建交换机
-        Exchange exchange = new DirectExchange(EXCHANGE_NAME,true,false);
+        Exchange exchange = new DirectExchange(EXCHANGE_NAME, true, false);
         amqpAdmin.declareExchange(exchange);
         //创建用于接收报警消息的RabbitMQ消息队列
-        Properties properties =  amqpAdmin.getQueueProperties(QUEUE_NAME);
+        Properties properties = amqpAdmin.getQueueProperties(QUEUE_NAME);
         //如果队列已存在则无需创建
-        if(properties != null){
+        if (properties != null) {
             return;
         }
-        Queue queue = new Queue(QUEUE_NAME,true,false,false);
+        Queue queue = new Queue(QUEUE_NAME, true, false, false);
         amqpAdmin.declareQueue(queue);
         Binding binding = BindingBuilder.bind(queue).to(new DirectExchange(EXCHANGE_NAME)).with(ROUTING_KEY);
         amqpAdmin.declareBinding(binding);
         log.info("初始化MQ环境结束");
     }
-
 
 
 }

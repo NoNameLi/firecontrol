@@ -28,9 +28,7 @@ package cn.turing.firecontrol.device.feign;
 import cn.turing.firecontrol.auth.client.config.FeignApplyConfiguration;
 import cn.turing.firecontrol.common.msg.ObjectRestResponse;
 import cn.turing.firecontrol.common.msg.TableResultResponse;
-import cn.turing.firecontrol.device.entity.Channel;
 import com.alibaba.fastjson.JSONObject;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,53 +39,55 @@ import java.util.Map;
  * @author hanyong
  * @create 2018/2/11.
  */
-@FeignClient(value = "turing-admin",configuration = FeignApplyConfiguration.class)
+@FeignClient(value = "turing-admin", configuration = FeignApplyConfiguration.class)
 public interface IUserFeign {
     /**
      * 获取当前用户授权的部门数据权限Id列表
+     *
      * @return
      */
-    @RequestMapping(value="/user/dataDepart",method = RequestMethod.GET)
+    @RequestMapping(value = "/user/dataDepart", method = RequestMethod.GET)
     List<String> getUserDataDepartIds(@RequestParam("userId") String userId);
 
     @GetMapping(value = "/user/isSuperAdmin")
     Boolean isSuperAdmin(@RequestParam("userId") String userId);
 
-    @RequestMapping(value="channel/all",method ={RequestMethod.GET})
-    List<Map<String,Object>> getAll();
+    @RequestMapping(value = "channel/all", method = {RequestMethod.GET})
+    List<Map<String, Object>> getAll();
 
-    @RequestMapping(value="channel/{id}",method ={RequestMethod.GET})
+    @RequestMapping(value = "channel/{id}", method = {RequestMethod.GET})
     JSONObject selectById(@PathVariable(value = "id") Integer id);
 
     /**
      * 根据用户名查找用户信息
+     *
      * @param username
      * @return
      */
-    @RequestMapping(value="/user/info",method = RequestMethod.POST)
+    @RequestMapping(value = "/user/info", method = RequestMethod.POST)
     JSONObject getUser(@RequestParam("username") String username);
 
     /**
      * 根据租户id获取拥有的栏目
      */
-    @RequestMapping(value="/channel/tree",method = RequestMethod.GET)
+    @RequestMapping(value = "/channel/tree", method = RequestMethod.GET)
     ObjectRestResponse tree(@RequestParam("tenantId") String tenantId);
 
     /**
      * 根据用户ids批量查询用户信息（分页）
      */
-    @RequestMapping(value="/user/queryUsersByPage",method = RequestMethod.GET)
-    TableResultResponse<Map> queryUsersByPage(@RequestParam("ids")String ids, @RequestParam("username")String username, @RequestParam("name")String name, @RequestParam("mobilePhone")String mobilePhone, @RequestParam("isReverse")Boolean isReverse, @RequestParam("pageNum")String pageNum, @RequestParam("limit")String limit ,@RequestParam("tenantId")String tenantId);
+    @RequestMapping(value = "/user/queryUsersByPage", method = RequestMethod.GET)
+    TableResultResponse<Map> queryUsersByPage(@RequestParam("ids") String ids, @RequestParam("username") String username, @RequestParam("name") String name, @RequestParam("mobilePhone") String mobilePhone, @RequestParam("isReverse") Boolean isReverse, @RequestParam("pageNum") String pageNum, @RequestParam("limit") String limit, @RequestParam("tenantId") String tenantId);
 
     /**
      * 根据用户ids批量查询用户信息（不分页）
      */
-    @RequestMapping(value="/user/queryUsers",method = RequestMethod.GET)
-    ObjectRestResponse queryUsers(@RequestParam("ids")String ids, @RequestParam("username")String username, @RequestParam("name")String name, @RequestParam("mobilePhone")String mobilePhone, @RequestParam("isReverse")Boolean isReverse,@RequestParam("tenantId")String tenantId);
+    @RequestMapping(value = "/user/queryUsers", method = RequestMethod.GET)
+    ObjectRestResponse queryUsers(@RequestParam("ids") String ids, @RequestParam("username") String username, @RequestParam("name") String name, @RequestParam("mobilePhone") String mobilePhone, @RequestParam("isReverse") Boolean isReverse, @RequestParam("tenantId") String tenantId);
 
-    @RequestMapping(value="/user/tenant/admin",method = RequestMethod.GET)
+    @RequestMapping(value = "/user/tenant/admin", method = RequestMethod.GET)
     public JSONObject getTenantAdmin(@RequestParam("tenantId") String tenantId);
 
-    @RequestMapping(value="/user/info/userId",method = RequestMethod.POST)
+    @RequestMapping(value = "/user/info/userId", method = RequestMethod.POST)
     JSONObject getUserById(@RequestParam("userId") String userId);
 }

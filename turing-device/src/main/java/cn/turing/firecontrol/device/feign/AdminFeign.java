@@ -14,5 +14,5 @@ public interface AdminFeign {
     ObjectRestResponse getByIds(@RequestParam("ids")String ids);
 
     @RequestMapping(value = "tenant/getByTenantNo",method = RequestMethod.GET)
-    JSONObject getByTenantNo(@RequestParam String tenantNo);
+    JSONObject getByTenantNo(@RequestParam("tenantNo") String tenantNo);
 }

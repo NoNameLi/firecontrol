@@ -206,7 +206,7 @@ public class AdminAccessFilter extends ZuulFilter {
             boolean anyMatch = permissionInfos.parallelStream().anyMatch(new Predicate<PermissionInfo>() {
                 @Override
                 public boolean test(PermissionInfo permissionInfo) {
-                    return permissionInfo.getCode().equals(info.getCode());
+                    return StringUtils.equals(permissionInfo.getCode(),info.getCode());
                 }
             });
             if (anyMatch) {

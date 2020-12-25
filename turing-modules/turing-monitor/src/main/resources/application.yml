@@ -42,11 +42,11 @@ eureka:
     statusPageUrlPath: /swagger-ui.html
     healthCheckUrlPath: /health
     prefer-ip-address: true
-    ip-address:  ${spring.cloud.client.ipAddress}
+    ip-address:  ${SELF_HOST:192.168.0.180}
     leaseRenewalIntervalInSeconds: 5
   client:
     serviceUrl:
-      defaultZone: http://192.168.0.22:8761/eureka/
+      defaultZone: http://${EUREKA_HOST:127.0.0.1}:${EUREKA_PORT:8761}/eureka/
 
 
 #图灵正式线

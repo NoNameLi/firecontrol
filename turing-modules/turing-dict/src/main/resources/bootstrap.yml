@@ -1,24 +1,22 @@
 spring:
   cloud:
     config:
-        discovery:
-           service-id: turing-config
-           enabled: true
-        label: master  # git 分支
-        name: dict
-        profile: demo
+      discovery:
+        service-id: turing-config
+        enabled: true
+      label: ${CONFIG_LABEL:master} # git 分支
+      name: dict
+      profile: demo
 eureka:
-    instance:
-        statusPageUrlPath: /swagger-ui.html
-        healthCheckUrlPath: /health
-        # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
-        prefer-ip-address: true
-        ip-address: ${spring.cloud.client.ipAddress}
-    client:
-        serviceUrl:
-#            defaultZone: http://localhost:8761/eureka/
-                    # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
-          defaultZone: http://host:8761/eureka/,http://10.21.16.4:8761/eureka/
+  instance:
+    statusPageUrlPath: /swagger-ui.html
+    healthCheckUrlPath: /health
+    prefer-ip-address: true
+    ip-address:  ${SELF_HOST:192.168.0.180}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:127.0.0.1}:${EUREKA_PORT:8761}/eureka/
 
 #请求和响应GZIP压缩支持
 feign:
@@ -50,9 +48,9 @@ ribbon:
 hystrix:
   threadpool:
     default:
-            coreSize: 1000
-            maxQueueSize: 1000
-            queueSizeRejectionThreshold: 500
+      coreSize: 1000
+      maxQueueSize: 1000
+      queueSizeRejectionThreshold: 500
   command:
     default:
       execution:

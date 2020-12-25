@@ -58,7 +58,7 @@ public class RedisConfiguration {
     }
 
     //事件监听
-    @Bean
+//    @Bean
     RedisMessageListenerContainer listenerContainer(RedisConnectionFactory connectionFactory){
         RedisMessageListenerContainer listenerContainer = new RedisMessageListenerContainer();
         listenerContainer.setConnectionFactory(connectionFactory);

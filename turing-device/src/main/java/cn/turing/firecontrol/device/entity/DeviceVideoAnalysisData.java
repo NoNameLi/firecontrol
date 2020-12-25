@@ -1,13 +1,11 @@
 package cn.turing.firecontrol.device.entity;
 
-import cn.turing.firecontrol.device.util.Constants;
 import com.google.common.collect.Maps;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Map;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created on 2019/02/25 14:43
@@ -21,6 +19,8 @@ public class DeviceVideoAnalysisData extends ElasticSearchEntity implements Seri
     public static final Integer ANALYSIS_RESULT_MALFUNCTION = 0;
     public static final Integer ANALYSIS_RESULT_ALARM = 1;
     public static final Integer ANALYSIS_RESULT_NORMAL = 2;
+
+    private String id;
 
     //设备编号
     private String sensorNo;
@@ -38,12 +38,13 @@ public class DeviceVideoAnalysisData extends ElasticSearchEntity implements Seri
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = Maps.newHashMap();
-        map.put("sensorNo",sensorNo);
-        map.put("analysisValue",analysisValue);
-        map.put("analysisPicture",analysisPicture);
-        map.put("analysisResult",analysisResult);
-        map.put("tenantId",tenantId);
-        map.put("analysisTime",dateFormat.format(analysisTime));
+        map.put("sensorNo", sensorNo);
+        map.put("analysisValue", analysisValue);
+        map.put("analysisPicture", analysisPicture);
+        map.put("analysisResult", analysisResult);
+        map.put("tenantId", tenantId);
+        map.put("analysisTime", dateFormat.format(analysisTime));
+        map.put("id", id);
         return map;
     }
 }

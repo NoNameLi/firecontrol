@@ -8,15 +8,11 @@ import cn.turing.firecontrol.device.vo.ResultVo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
-import org.elasticsearch.client.transport.TransportClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cn.turing.firecontrol.device.mapper.DeviceAbnormalMapper;
 import cn.turing.firecontrol.common.biz.BusinessBiz;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static java.util.Collections.*;
 
 /**
  * 

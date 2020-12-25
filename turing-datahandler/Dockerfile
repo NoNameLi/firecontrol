@@ -7,8 +7,9 @@ RUN apk add --no-cache tzdata \
     && ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 
-ADD turing-dict.jar app.jar
+ADD ./target/turing-datahandler.jar app.jar
 ADD wait-for-it.sh /wait-for-it.sh
 RUN sh -c 'touch /app.jar'
 RUN bash -c 'chmod 777 /wait-for-it.sh'
-CMD exec java -Djava.security.egd=file:/dev/./urandom -jar /app.jar
+
+CMD exec java -Xms256m -Xmx512m -Dfile.encoding=UTF-8  -Djava.security.egd=file:/dev/./urandom -jar /app.jar

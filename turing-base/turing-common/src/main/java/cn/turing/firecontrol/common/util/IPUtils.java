@@ -104,6 +104,27 @@ public class IPUtils {
 
 
     private static String getRegionByGaode(String ip){
+        String uri = "https://restapi.amap.com/v3/ip?key=729ca7acb620de71d2a3177c88855ec4&ip=" + ip;
+        try{
+            URL url = new URL(uri);
+            URLConnection connection = url.openConnection();
+            InputStream is = connection.getInputStream();
+            String json = IOUtils.toString(is,"utf-8");
+            JSONObject obj = JSONObject.parseObject(json);
+            String province = obj.getString("province");
+            String city = obj.getString("city");
+            if("[]".equals(city)){
+                city = "";
+            }
+            return  province + city;
+        }catch (IOException e){
+            log.error("查询IP地址失败",e);
+            System.out.println(e.getMessage());
+            return "未知";
+        }
+    }
+
+    private static String getRegionByalicloud(String ip){
         String uri = "http://iploc.market.alicloudapi.com/v3/ip?ip=" + ip;
         String appcode = "2c98bf83572848379a4629957378d6eb";
         log.info("appcode:{}",appcode);
@@ -129,7 +150,6 @@ public class IPUtils {
             System.out.println(e.getMessage());
             return "未知";
         }
-
     }
 
     public static void main(String[] args){

@@ -3,19 +3,19 @@ package cn.turing.firecontrol.server.business.impl;
 
 import cn.turing.common.entity.DeviceInfo;
 import cn.turing.firecontrol.common.msg.ObjectRestResponse;
-import cn.turing.firecontrol.server.base.Constant;
 import cn.turing.firecontrol.server.business.BusinessI;
 import cn.turing.firecontrol.server.entity.SensorDetail;
 import cn.turing.firecontrol.server.entity.acrel.AcrelDeviceInfo;
 import cn.turing.firecontrol.server.feign.IDevcieFeigndataHandler;
-
-import cn.turing.firecontrol.server.util.SocketBaseUtil;
 import cn.turing.firecontrol.server.feign.IDeviceFeign;
 import cn.turing.firecontrol.server.feign.IUserFeign;
+import cn.turing.firecontrol.server.util.SocketBaseUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -26,11 +26,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -61,7 +61,9 @@ public class BusinessImpl implements BusinessI {
     private String hengYangroutingKey;
 
     @Autowired
-    private TransportClient client;
+//    private TransportClient client;
+    private RestHighLevelClient client;
+
     @Autowired
     StringRedisTemplate redisTemplate;
     @Autowired
@@ -107,26 +109,26 @@ public class BusinessImpl implements BusinessI {
     @Override
     public void sendFireDoorMessage(String uuid, DeviceInfo deviceInfo) {
         // {"type":"firedoor","data":"{}"}
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("type","firedoor");
-        JSONObject object=new JSONObject(); //data
-        JSONObject js=deviceInfo.toAlarmJSON(uuid);
-        object.put("current",js);
-        if (redisTemplate.hasKey(sensorflagfiredoor+deviceInfo.getDevice_id())){
-            JSONObject jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflagfiredoor+deviceInfo.getDevice_id()));
-            log.info("上一条数据:"+jsonObject1);
-            object.put("last",jsonObject1);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "firedoor");
+        JSONObject object = new JSONObject(); //data
+        JSONObject js = deviceInfo.toAlarmJSON(uuid);
+        object.put("current", js);
+        if (redisTemplate.hasKey(sensorflagfiredoor + deviceInfo.getDevice_id())) {
+            JSONObject jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflagfiredoor + deviceInfo.getDevice_id()));
+            log.info("上一条数据:" + jsonObject1);
+            object.put("last", jsonObject1);
         }
-        jsonObject.put("data",object);
+        jsonObject.put("data", object);
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
-        rabbitTemplate.convertAndSend(fireDoorExchange,fireDoorRoutingKey,jsonObject.toString().getBytes(),correlationId);
-        log.info("推送成功:"+jsonObject.toString());
+        rabbitTemplate.convertAndSend(fireDoorExchange, fireDoorRoutingKey, jsonObject.toString().getBytes(), correlationId);
+        log.info("推送成功:" + jsonObject.toString());
     }
 
     @Override
     public void sendHengYangMessage(String string) {
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
-        log.info(hengYangExchange+"+"+hengYangroutingKey);
+        log.info(hengYangExchange + "+" + hengYangroutingKey);
         rabbitTemplate.convertAndSend(hengYangExchange, hengYangroutingKey, string.getBytes(), correlationId);
         log.info("推送衡阳分公司success...");
     }
@@ -143,48 +145,49 @@ public class BusinessImpl implements BusinessI {
 
     @Override
     public void updateFireDoorStatus(String sensorNo, Integer status) {
-        iDeviceFeign.updateFireDoor(sensorNo,status);
+        iDeviceFeign.updateFireDoor(sensorNo, status);
     }
 
     @Override
-    public void sendDeviceAlarmMQ(String uuid,DeviceInfo deviceInfo,String type) {
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("type",type);
-        JSONObject V1=deviceInfo.toAlarmJSON();
-        V1.put("logId",uuid);
-        jsonObject.put("data",V1);
+    public void sendDeviceAlarmMQ(String uuid, DeviceInfo deviceInfo, String type) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", type);
+        JSONObject V1 = deviceInfo.toAlarmJSON();
+        V1.put("logId", uuid);
+        jsonObject.put("data", V1);
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
-        System.out.println("===="+jsonObject.toString());
-        rabbitTemplate.convertAndSend(fireDoorExchange,fireDoorRoutingKey,jsonObject.toString().getBytes(),correlationId);
+        System.out.println("====" + jsonObject.toString());
+        rabbitTemplate.convertAndSend(fireDoorExchange, fireDoorRoutingKey, jsonObject.toString().getBytes(), correlationId);
     }
 
     @Override
     public void sendDeviceAlarmMQToAcrel(String uuid, AcrelDeviceInfo deviceInfo, String type) {
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("type",type);
-        JSONObject V1=deviceInfo.toAlarmJSON();
-        V1.put("logId",uuid);
-        jsonObject.put("data",V1);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", type);
+        JSONObject V1 = deviceInfo.toAlarmJSON();
+        V1.put("logId", uuid);
+        jsonObject.put("data", V1);
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
-        System.out.println("===="+jsonObject.toString());
-        rabbitTemplate.convertAndSend(fireDoorExchange,fireDoorRoutingKey,jsonObject.toString().getBytes(),correlationId);
+        System.out.println("====" + jsonObject.toString());
+        rabbitTemplate.convertAndSend(fireDoorExchange, fireDoorRoutingKey, jsonObject.toString().getBytes(), correlationId);
     }
 
     @Override
     public void abnormalRestore(String sensorNo) {
-        log.info("恢复异常设备："+sensorNo);
+        log.info("恢复异常设备：" + sensorNo);
         ObjectRestResponse res = iDevcieFeigndataHandler.abnormalRestore(sensorNo);
-        System.out.println("res"+res+"s"+res.toString());
+        System.out.println("res" + res + "s" + res.toString());
     }
 
 
-    public static  String sensorflagMain="fireMain";
+    public static String sensorflagMain = "fireMain";
+
     @Override
     public JSONObject selectRedisFireMain(String ip, String port, String loopNo, String localtionNo) {
-        String deviceId=ip+port+loopNo+localtionNo;
-        JSONObject jsonObject1=null;
-        if (redisTemplate.hasKey(sensorflag+deviceId)){
-            jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflag+deviceId));
+        String deviceId = ip + port + loopNo + localtionNo;
+        JSONObject jsonObject1 = null;
+        if (redisTemplate.hasKey(sensorflag + deviceId)) {
+            jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflag + deviceId));
 
         }
         return jsonObject1;
@@ -193,76 +196,72 @@ public class BusinessImpl implements BusinessI {
     @Override
     public boolean sendMessageFireMain(JSONObject js, JSONObject jsonObject1) {
         //{"data":{"current":{"port":"1","ip":"127.0.0.1","alarm":{"alarmType":"报警","alarmStatus":1,"alarmValue":1},"logid":"f10c401951ca4b54a7f59fcd2fcce800","localtionNo":"7101","loopNo":"27","status":true,"uploadtime":"2019-11-29 16:54:01"},"last":{"port":"1","ip":"127.0.0.1","alarm":{"alarmType":"正常","alarmStatus":2,"alarmValue":2},"logid":"b368a3407343457eaaa65c1f18a76880","localtionNo":"7101","loopNo":"27","uploadtime":"2019-11-29 16:53:46","status":false}},"type":"firemain"}
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("type","firemain");
-        JSONObject object=new JSONObject();
-        object.put("last",js);
-        object.put("current",jsonObject1);
-        jsonObject.put("data",object);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "firemain");
+        JSONObject object = new JSONObject();
+        object.put("last", js);
+        object.put("current", jsonObject1);
+        jsonObject.put("data", object);
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
-        rabbitTemplate.convertAndSend(fireDoorExchange,fireDoorRoutingKey,jsonObject.toString().getBytes(),correlationId);
-        log.info("推送成功:"+jsonObject.toString());
+        rabbitTemplate.convertAndSend(fireDoorExchange, fireDoorRoutingKey, jsonObject.toString().getBytes(), correlationId);
+        log.info("推送成功:" + jsonObject.toString());
         return false;
     }
 
     @Override
     public boolean updateFireMainInRedis(String ip, String port, String loopNo, String localtionNo, Boolean flag, int timeout, String uuid, SensorDetail sensorDetail) {
-        JSONObject jsonObject=new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        jsonObject.put("ip",ip);
-        jsonObject.put("port",port);
-        jsonObject.put("loopNo",loopNo);
-        jsonObject.put("localtionNo",localtionNo);
-        jsonObject.put("uploadtime",sdf.format(new Date()));
-        jsonObject.put("status",flag);
-        jsonObject.put("logid",uuid);
-        JSONObject json=new JSONObject();
-        json.put("alarmType",sensorDetail.getAlarmType());
-        json.put("alarmStatus",sensorDetail.getAlarmStatus());
-        json.put("alarmValue",sensorDetail.getAlarmValue());
-        jsonObject.put("alarm",json);
-        String deviceId=ip+port+loopNo+localtionNo;
+        jsonObject.put("ip", ip);
+        jsonObject.put("port", port);
+        jsonObject.put("loopNo", loopNo);
+        jsonObject.put("localtionNo", localtionNo);
+        jsonObject.put("uploadtime", sdf.format(new Date()));
+        jsonObject.put("status", flag);
+        jsonObject.put("logid", uuid);
+        JSONObject json = new JSONObject();
+        json.put("alarmType", sensorDetail.getAlarmType());
+        json.put("alarmStatus", sensorDetail.getAlarmStatus());
+        json.put("alarmValue", sensorDetail.getAlarmValue());
+        jsonObject.put("alarm", json);
+        String deviceId = ip + port + loopNo + localtionNo;
         try {
-            if (redisTemplate.hasKey(sensorflag+deviceId)) {
+            if (redisTemplate.hasKey(sensorflag + deviceId)) {
                 SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                JSONObject jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflag+deviceId));
-                System.out.println(sensorflag+deviceId+" "+jsonObject1);
+                JSONObject jsonObject1 = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflag + deviceId));
+                System.out.println(sensorflag + deviceId + " " + jsonObject1);
                 Date dateinredis = sdf1.parse(jsonObject1.getString("uploadtime"));
 
                 if (dateinredis.getTime() <= new Date().getTime()) {
 
-                    redisTemplate.opsForValue().set(sensorflag+deviceId,jsonObject.toJSONString(),timeout, TimeUnit.SECONDS );
-                    log.info("expire:"+sensorflag+deviceId+":"+timeout);
+                    redisTemplate.opsForValue().set(sensorflag + deviceId, jsonObject.toJSONString(), timeout, TimeUnit.SECONDS);
+                    log.info("expire:" + sensorflag + deviceId + ":" + timeout);
 
                 }
             } else {
-                redisTemplate.opsForValue().set(sensorflag+deviceId,jsonObject.toJSONString(),timeout, TimeUnit.SECONDS );
+                redisTemplate.opsForValue().set(sensorflag + deviceId, jsonObject.toJSONString(), timeout, TimeUnit.SECONDS);
 
-                log.info("expire:"+sensorflag+deviceId+":"+timeout);
+                log.info("expire:" + sensorflag + deviceId + ":" + timeout);
 
             }
-        }catch (Exception e){
-            log.error("发到redis失败",e);
+        } catch (Exception e) {
+            log.error("发到redis失败", e);
             return false;
         }
         return true;
     }
 
 
-
-
-
-
     @Override
     public JSONObject selectMqttSensoralarmValue(String deviceId) {
-        JSONObject jsonObject=null;//loraMapper.selectMqttSensoralarmValue(deviceId);
-        if (jsonObject==null){
-            JSONObject jsonObject1=new JSONObject();
-            jsonObject1.put("temp_alarm",45);
-            jsonObject1.put("vol_alarm",500);
-            jsonObject1.put("sensorId",deviceId);
+        JSONObject jsonObject = null;//loraMapper.selectMqttSensoralarmValue(deviceId);
+        if (jsonObject == null) {
+            JSONObject jsonObject1 = new JSONObject();
+            jsonObject1.put("temp_alarm", 45);
+            jsonObject1.put("vol_alarm", 500);
+            jsonObject1.put("sensorId", deviceId);
             return jsonObject1;
-        }else{
+        } else {
             return jsonObject;
         }
 
@@ -270,7 +269,7 @@ public class BusinessImpl implements BusinessI {
 
 
     public static String sensorflag = "sensor:";
-    public  static String sensorflagfiredoor="sensor:firedoor:";//防火门标识
+    public static String sensorflagfiredoor = "sensor:firedoor:";//防火门标识
     public static String sensorflagXs = "monitor:";
 
 
@@ -340,28 +339,28 @@ public class BusinessImpl implements BusinessI {
     public boolean updateInRedisByFireDoor(DeviceInfo deviceInfo, int timeout_second, String uuid) {
         //可能会有脏数据，但是概率相当低。
         try {
-            if (redisTemplate.hasKey(sensorflagfiredoor+deviceInfo.getDevice_id())) {
+            if (redisTemplate.hasKey(sensorflagfiredoor + deviceInfo.getDevice_id())) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflagfiredoor+deviceInfo.getDevice_id()));
-                System.out.println(sensorflag+deviceInfo.getDevice_id()+" "+jsonObject);
+                JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForValue().get(sensorflagfiredoor + deviceInfo.getDevice_id()));
+                System.out.println(sensorflag + deviceInfo.getDevice_id() + " " + jsonObject);
                 Date dateinredis = sdf.parse(jsonObject.getString("uploadtime"));
 
                 if (dateinredis.getTime() <= deviceInfo.getUpload_time().getTime()) {
 
-                    redisTemplate.opsForValue().set(sensorflagfiredoor+deviceInfo.getDevice_id(),deviceInfo.toAlarmJSON(uuid).toJSONString(),timeout_second, TimeUnit.SECONDS );
+                    redisTemplate.opsForValue().set(sensorflagfiredoor + deviceInfo.getDevice_id(), deviceInfo.toAlarmJSON(uuid).toJSONString(), timeout_second, TimeUnit.SECONDS);
                     //jedisCluster.get(sensorflag+deviceInfo.getDevice_id());
                     //jedisCluster.expire(sensorflag+deviceInfo.getDevice_id(), );
-                    log.info("expire:"+sensorflagfiredoor+deviceInfo.getDevice_id()+":"+timeout_second);
+                    log.info("expire:" + sensorflagfiredoor + deviceInfo.getDevice_id() + ":" + timeout_second);
                     //jedisCluster.publish(Constant.RedisConstant.CHANNEL, sensorflag+deviceInfo.getDevice_id());
                 }
             } else {
-                redisTemplate.opsForValue().set(sensorflagfiredoor+deviceInfo.getDevice_id(),deviceInfo.toAlarmJSON(uuid).toJSONString(),timeout_second, TimeUnit.SECONDS );
+                redisTemplate.opsForValue().set(sensorflagfiredoor + deviceInfo.getDevice_id(), deviceInfo.toAlarmJSON(uuid).toJSONString(), timeout_second, TimeUnit.SECONDS);
                 //jedisCluster.expire(sensorflag+deviceInfo.getDevice_id(), );
-                log.info("expire:"+sensorflagfiredoor+deviceInfo.getDevice_id()+":"+timeout_second);
+                log.info("expire:" + sensorflagfiredoor + deviceInfo.getDevice_id() + ":" + timeout_second);
                 //jedisCluster.publish(Constant.RedisConstant.CHANNEL, sensorflag+deviceInfo.getDevice_id());
             }
-        }catch (Exception e){
-            log.error("发到redis失败",e);
+        } catch (Exception e) {
+            log.error("发到redis失败", e);
             return false;
         }
         return true;
@@ -505,7 +504,10 @@ public class BusinessImpl implements BusinessI {
     public void insertData(String index, String type, String id, Map<String, Object> map) {
         log.info("增加原始数据到ES开始");
         try {
-            IndexResponse response = client.prepareIndex(index, type, id).setSource(map).get();
+            IndexRequest indexRequest = new IndexRequest(index);
+            indexRequest.id(id)/*.type(type)*/.source(map);
+            log.info("数据内容:" + id + ":" + JSON.toJSONString(map));
+            IndexResponse response = client.index(indexRequest, RequestOptions.DEFAULT);
             log.info("返回的状态码：" + response.status().getStatus());
         } catch (Exception e) {
             log.error("增加原始数据到ES出错");
@@ -517,7 +519,7 @@ public class BusinessImpl implements BusinessI {
 
     @Override
     public void updateStatus(String deviceID, DeviceInfo deviceInfo, String status) {
-   //     log.info("更新状态");
+        //     log.info("更新状态");
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             log.info("deviceID:" + deviceID + "deviceInfo:" + deviceInfo.getUpload_time() + "status:" + status);
@@ -530,7 +532,7 @@ public class BusinessImpl implements BusinessI {
 
     @Override
     public void updateStatusToAcrel(String deviceID, AcrelDeviceInfo deviceInfo, String status) {
-    //    log.info("更新状态");
+        //    log.info("更新状态");
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             log.info("deviceID:" + deviceID + "deviceInfo:" + deviceInfo.getUpload_time() + "status:" + status);
@@ -543,12 +545,12 @@ public class BusinessImpl implements BusinessI {
 
     @Override
     public void updateStatus(String ip, String port, String loopNo, String localtionNo, String status) {
-   //     log.info("更新状态");
+        //     log.info("更新状态");
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             iDeviceFeign.updateSensorStatus(ip, port, loopNo, localtionNo, status, sdf.format(new Date()));
         } catch (Exception e) {
-            log.error("\"更新状态出错:?>>>>\""+e.getMessage());
+            log.error("\"更新状态出错:?>>>>\"" + e.getMessage());
         }
     }
 }
